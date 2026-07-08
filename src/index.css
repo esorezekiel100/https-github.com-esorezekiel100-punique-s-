@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Fraunces", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-brand-orange: #FF5A36; /* Vibrant, delicious coral-orange */
+  --color-brand-green: #0E2919;  /* Lush botanical evergreen */
+  --color-brand-cream: #FAF6F0;  /* Soft, warm oatmeal/vanilla cream */
+  --color-brand-gold: #E5A93B;   /* Smooth warm gold */
+}
+
+/* Custom scrollbar for menu browsing and lists */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #FAF6F0;
+}
+::-webkit-scrollbar-thumb {
+  background: #FF5A36;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #0E2919;
+}

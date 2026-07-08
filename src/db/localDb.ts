@@ -1,0 +1,448 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import fs from "fs";
+import path from "path";
+import { Category, MenuItem, Order, Coupon, KitchenSettings, OrderStatus, DeliveryType, Review } from "../types";
+
+const DB_DIR = path.join(process.cwd(), "src", "db");
+const DB_FILE = path.join(DB_DIR, "db.json");
+
+interface DbSchema {
+  categories: Category[];
+  menuItems: MenuItem[];
+  orders: Order[];
+  coupons: Coupon[];
+  settings: KitchenSettings;
+  reviews: Review[];
+}
+
+// Initial seed data
+const initialCategories: Category[] = [
+  { id: "cat-1", name: "Everyday Favourites", slug: "everyday-favourites", imageUrl: "https://images.unsplash.com/photo-1509722747041-616f39b57569?auto=format&fit=crop&q=80&w=400" },
+  { id: "cat-2", name: "Signature Dishes", slug: "signature-dishes", imageUrl: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&q=80&w=400" },
+  { id: "cat-3", name: "Rice Dishes", slug: "rice-dishes", imageUrl: "https://images.unsplash.com/photo-1612531388330-801a1d8db121?auto=format&fit=crop&q=80&w=400" },
+  { id: "cat-4", name: "Soups", slug: "soups", imageUrl: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&q=80&w=400" },
+  { id: "cat-5", name: "Sauces", slug: "sauces", imageUrl: "https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?auto=format&fit=crop&q=80&w=400" },
+  { id: "cat-6", name: "Special Dishes", slug: "special-dishes", imageUrl: "https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?auto=format&fit=crop&q=80&w=400" }
+];
+
+const initialMenuItems: MenuItem[] = [
+  {
+    id: "menu-1",
+    name: "Creamy Beef Sandwich",
+    description: "Rich, creamy slow-cooked shredded beef tucked inside warm toasted artisanal bread with special house sauce.",
+    price: 1000,
+    categoryId: "cat-1",
+    imageUrl: "https://images.unsplash.com/photo-1521390188846-e2a3a97453a0?auto=format&fit=crop&q=80&w=500",
+    inStock: true,
+    isTodaySpecial: false,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: "menu-2",
+    name: "Golden Fluffy Pancakes",
+    description: "Thick, golden, buttermilk pancakes served hot with a dollop of premium butter and sweet syrup.",
+    price: 1000,
+    categoryId: "cat-1",
+    imageUrl: "https://images.unsplash.com/photo-1528207776546-365bb710ee93?auto=format&fit=crop&q=80&w=500",
+    inStock: true,
+    isTodaySpecial: false,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: "menu-3",
+    name: "Stir Fry Noodles and Egg",
+    description: "Wok-tossed noodles packed with shredded carrots, bell peppers, local bayelsa chili spices, finished with a fried egg.",
+    price: 1400,
+    categoryId: "cat-2",
+    imageUrl: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&q=80&w=500",
+    inStock: true,
+    isTodaySpecial: true,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: "menu-4",
+    name: "Smokey Jollof Rice",
+    description: "Authentic, party-style Nigerian Jollof rice cooked over high heat to achieve that distinct local smokey firewood aroma.",
+    price: 1800,
+    categoryId: "cat-3",
+    imageUrl: "https://images.unsplash.com/photo-1611143669185-af224c5e3252?auto=format&fit=crop&q=80&w=500",
+    inStock: true,
+    isTodaySpecial: false,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: "menu-5",
+    name: "Stir-Fried Rice",
+    description: "Fragrant seasoned rice stir-fried with crisp greens, sweet corn, minced carrots, beef bits, and local spices.",
+    price: 1600,
+    categoryId: "cat-3",
+    imageUrl: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&q=80&w=500",
+    inStock: true,
+    isTodaySpecial: false,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: "menu-6",
+    name: "Special Asun Rice",
+    description: "Spiced Jollof rice tossed with chunks of fiery peppered charcoal-grilled goat meat (Asun), bell peppers, and raw onions.",
+    price: 2200,
+    categoryId: "cat-3",
+    imageUrl: "https://images.unsplash.com/photo-1541832676-9b763b0239ab?auto=format&fit=crop&q=80&w=500",
+    inStock: true,
+    isTodaySpecial: true,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: "menu-7",
+    name: "Rich Egusi Soup",
+    description: "Thick melon seed soup steamed with rich palm oil, crayfish, bitterleaf, and Nigerian traditional spices. Select your protein option!",
+    price: 2500,
+    categoryId: "cat-4",
+    imageUrl: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&q=80&w=500",
+    inStock: true,
+    proteinOptions: ["Assorted Beef (+₦500)", "Local Goat Meat (+₦800)", "Fresh Catfish (+₦1,000)"],
+    isTodaySpecial: false,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: "menu-8",
+    name: "Bayelsa Native Seafood Okra",
+    description: "Good meal equal happy bellies! Slimy rich okra broth loaded with fresh periwinkles, baby crabs, prawns, stockfish, and local seafood spices.",
+    price: 2800,
+    categoryId: "cat-4",
+    imageUrl: "https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?auto=format&fit=crop&q=80&w=500",
+    inStock: true,
+    proteinOptions: ["Fresh Catfish (+₦1,000)", "Extra Jumbo Prawns (+₦1,200)", "Smoked Fish (+₦600)"],
+    isTodaySpecial: true,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: "menu-9",
+    name: "Efik Afang Soup",
+    description: "Nutritious waterleaf and wild Afang leaves ground fine and simmered slow with rich palm oil, cow skin (kpomo), and stockfish.",
+    price: 2700,
+    categoryId: "cat-4",
+    imageUrl: "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&q=80&w=500",
+    inStock: true,
+    proteinOptions: ["Beef (+₦500)", "Goat Meat (+₦800)", "Dry Fish (+₦600)"],
+    isTodaySpecial: false,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: "menu-10",
+    name: "Beef Curry Sauce",
+    description: "Aromatic, thick curry gravy packed with tender cuts of beef, chopped Irish potatoes, carrots, and warm spices.",
+    price: 1500,
+    categoryId: "cat-5",
+    imageUrl: "https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?auto=format&fit=crop&q=80&w=500",
+    inStock: true,
+    isTodaySpecial: false,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: "menu-11",
+    name: "Chicken Curry Sauce",
+    description: "Mildly spiced, creamy, golden coconut curry with soft chicken chunks, delicious as a side or over white rice.",
+    price: 1500,
+    categoryId: "cat-5",
+    imageUrl: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=500",
+    inStock: true,
+    isTodaySpecial: false,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: "menu-12",
+    name: "Fisherman Soup (Premium)",
+    description: "Deep delta style light broth packed with sea catfish, local river crab, tiger prawns, periwinkles, and yellow peppers. Divine!",
+    price: 3500,
+    categoryId: "cat-6",
+    imageUrl: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&q=80&w=500",
+    inStock: true,
+    isTodaySpecial: true,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: "menu-13",
+    name: "Gizdodo Special",
+    description: "Diced peppered chicken gizzards and sweet fried Bayelsa plantains (dodo) tossed in a rich, sweet tomato-habanero sauce.",
+    price: 1800,
+    categoryId: "cat-6",
+    imageUrl: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=500",
+    inStock: true,
+    isTodaySpecial: false,
+    createdAt: new Date().toISOString()
+  }
+];
+
+const initialCoupons: Coupon[] = [
+  { id: "c-1", code: "PUNIQUE10", discountPercent: 10, validUntil: "2027-12-31", maxUses: 100, usesCount: 5, isActive: true },
+  { id: "c-2", code: "YENAGOA20", discountPercent: 20, validUntil: "2027-12-31", maxUses: 50, usesCount: 12, isActive: true },
+  { id: "c-3", code: "WELCOME5", discountPercent: 5, validUntil: "2027-12-31", maxUses: 500, usesCount: 84, isActive: true }
+];
+
+const initialSettings: KitchenSettings = {
+  deliveryFee: 800,
+  isOpen: true,
+  openingTime: "08:00",
+  closingTime: "21:30",
+  kitchenPhone: "+2348083163956",
+  closingDays: ["Sunday"]
+};
+
+const initialReviews: Review[] = [
+  {
+    id: "rev-1",
+    customerName: "Gift Amgbare",
+    phone: "+2348055662211",
+    menuItemId: "menu-8",
+    menuItemName: "Bayelsa Native Seafood Okra",
+    rating: 5,
+    comment: "Oh my goodness! The periwinkles and fresh baby crabs are sweet and authentic. Best seafood okra in Yenagoa, bar none!",
+    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    likes: 12
+  },
+  {
+    id: "rev-2",
+    customerName: "Oyinmiebi Harrison",
+    phone: "+2349088776655",
+    menuItemId: "menu-4",
+    menuItemName: "Smokey Jollof Rice",
+    rating: 5,
+    comment: "Proper party style! The firewood smoke flavor is perfect. Highly recommended.",
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    likes: 8
+  },
+  {
+    id: "rev-3",
+    customerName: "Precious Alagoa",
+    phone: "+2348083163956",
+    menuItemId: "menu-6",
+    menuItemName: "Special Asun Rice",
+    rating: 4,
+    comment: "Extremely tasty and fiery hot, just how I like my Asun. Chunks of goat meat were so tender. Definitely ordering again!",
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    likes: 5
+  },
+  {
+    id: "rev-4",
+    customerName: "Ebimene Williams",
+    phone: "+2348035552211",
+    menuItemId: "menu-1",
+    menuItemName: "Creamy Beef Sandwich",
+    rating: 5,
+    comment: "This is my absolute go-to breakfast. So creamy, satisfying, and filling.",
+    createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+    likes: 3
+  }
+];
+
+// Past Orders for analytics and beautiful dashboard display
+const getInitialOrders = (): Order[] => {
+  const dates = [
+    new Date(Date.now() - 6 * 24 * 60 * 60 * 1000), // 6 days ago
+    new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
+    new Date(Date.now() - 4 * 24 * 60 * 60 * 1000), // 4 days ago
+    new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+    new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+    new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // Yesterday
+    new Date() // Today
+  ];
+
+  return [
+    {
+      id: "ORD-9841",
+      customerName: "Ebiere Alagoa",
+      phone: "+2348123456789",
+      email: "ebiere@example.com",
+      address: "Mbiama-Yenagoa Road, Biogbolo, Yenagoa",
+      deliveryType: DeliveryType.DELIVERY,
+      status: OrderStatus.DELIVERED,
+      subtotal: 3500,
+      deliveryFee: 800,
+      discountAmount: 350,
+      discountCode: "PUNIQUE10",
+      total: 3950,
+      items: [
+        { id: "oi-1", orderId: "ORD-9841", menuItemId: "menu-12", name: "Fisherman Soup (Premium)", quantity: 1, priceAtTime: 3500 }
+      ],
+      createdAt: dates[0].toISOString()
+    },
+    {
+      id: "ORD-9842",
+      customerName: "Tari Tari",
+      phone: "+2347065432109",
+      deliveryType: DeliveryType.PICKUP,
+      status: OrderStatus.DELIVERED,
+      subtotal: 2800,
+      deliveryFee: 0,
+      discountAmount: 0,
+      total: 2800,
+      items: [
+        { id: "oi-2", orderId: "ORD-9842", menuItemId: "menu-3", name: "Stir Fry Noodles and Egg", quantity: 2, priceAtTime: 1400 }
+      ],
+      createdAt: dates[1].toISOString()
+    },
+    {
+      id: "ORD-9843",
+      customerName: "Precious Okilo",
+      phone: "+2349012345678",
+      email: "precious.o@gmail.com",
+      address: "Amarata Street, Yenagoa",
+      deliveryType: DeliveryType.DELIVERY,
+      status: OrderStatus.DELIVERED,
+      subtotal: 5800,
+      deliveryFee: 800,
+      discountAmount: 0,
+      total: 6600,
+      items: [
+        { id: "oi-3", orderId: "ORD-9843", menuItemId: "menu-6", name: "Special Asun Rice", quantity: 2, priceAtTime: 2200 },
+        { id: "oi-4", orderId: "ORD-9843", menuItemId: "menu-3", name: "Stir Fry Noodles and Egg", quantity: 1, priceAtTime: 1400 }
+      ],
+      createdAt: dates[2].toISOString()
+    },
+    {
+      id: "ORD-9844",
+      customerName: "Keme Jackson",
+      phone: "+2348033344455",
+      address: "Tombia Road, Ekeki, Yenagoa",
+      deliveryType: DeliveryType.DELIVERY,
+      status: OrderStatus.DELIVERED,
+      subtotal: 4400,
+      deliveryFee: 800,
+      discountAmount: 880,
+      discountCode: "YENAGOA20",
+      total: 4320,
+      items: [
+        { id: "oi-5", orderId: "ORD-9844", menuItemId: "menu-6", name: "Special Asun Rice", quantity: 2, priceAtTime: 2200 }
+      ],
+      createdAt: dates[3].toISOString()
+    },
+    {
+      id: "ORD-9845",
+      customerName: "Blessing Pere",
+      phone: "+2348144556677",
+      deliveryType: DeliveryType.PICKUP,
+      status: OrderStatus.DELIVERED,
+      subtotal: 3800,
+      deliveryFee: 0,
+      discountAmount: 0,
+      total: 3800,
+      items: [
+        { id: "oi-6", orderId: "ORD-9845", menuItemId: "menu-8", name: "Bayelsa Native Seafood Okra", quantity: 1, priceAtTime: 2800, selectedProtein: "Fresh Catfish (+₦1,000)", proteinExtraFee: 1000 }
+      ],
+      createdAt: dates[4].toISOString()
+    },
+    {
+      id: "ORD-9846",
+      customerName: "Godgift Jonathan",
+      phone: "+2347055667788",
+      email: "gg.jona@yahoo.com",
+      address: "Etegwe, Tombia Roundabout, Yenagoa",
+      deliveryType: DeliveryType.DELIVERY,
+      status: OrderStatus.DELIVERED,
+      subtotal: 3000,
+      deliveryFee: 800,
+      discountAmount: 300,
+      discountCode: "PUNIQUE10",
+      total: 3500,
+      items: [
+        { id: "oi-7", orderId: "ORD-9846", menuItemId: "menu-1", name: "Creamy Beef Sandwich", quantity: 3, priceAtTime: 1000 }
+      ],
+      createdAt: dates[5].toISOString()
+    },
+    {
+      id: "ORD-9847",
+      customerName: "Gift Amgbare",
+      phone: "+2348055662211",
+      address: "Okaka Road, Yenagoa",
+      deliveryType: DeliveryType.DELIVERY,
+      status: OrderStatus.PREPARING,
+      subtotal: 4100,
+      deliveryFee: 800,
+      discountAmount: 0,
+      total: 4900,
+      items: [
+        { id: "oi-8", orderId: "ORD-9847", menuItemId: "menu-7", name: "Rich Egusi Soup", quantity: 1, priceAtTime: 2500, selectedProtein: "Local Goat Meat (+₦800)", proteinExtraFee: 800 },
+        { id: "oi-9", orderId: "ORD-9847", menuItemId: "menu-11", name: "Chicken Curry Sauce", quantity: 1, priceAtTime: 1500 }
+      ],
+      createdAt: dates[6].toISOString()
+    },
+    {
+      id: "ORD-9848",
+      customerName: "Oyinmiebi Harrison",
+      phone: "+2349088776655",
+      deliveryType: DeliveryType.PICKUP,
+      status: OrderStatus.RECEIVED,
+      subtotal: 3200,
+      deliveryFee: 0,
+      discountAmount: 160,
+      discountCode: "WELCOME5",
+      total: 3040,
+      items: [
+        { id: "oi-10", orderId: "ORD-9848", menuItemId: "menu-4", name: "Smokey Jollof Rice", quantity: 1, priceAtTime: 1800 },
+        { id: "oi-11", orderId: "ORD-9848", menuItemId: "menu-3", name: "Stir Fry Noodles and Egg", quantity: 1, priceAtTime: 1400 }
+      ],
+      createdAt: dates[6].toISOString()
+    }
+  ];
+};
+
+// Create DB directory and seed file if not exists
+export function initDb() {
+  if (!fs.existsSync(DB_DIR)) {
+    fs.mkdirSync(DB_DIR, { recursive: true });
+  }
+
+  if (!fs.existsSync(DB_FILE)) {
+    const defaultData: DbSchema = {
+      categories: initialCategories,
+      menuItems: initialMenuItems,
+      orders: getInitialOrders(),
+      coupons: initialCoupons,
+      settings: initialSettings,
+      reviews: initialReviews
+    };
+    fs.writeFileSync(DB_FILE, JSON.stringify(defaultData, null, 2), "utf8");
+  }
+}
+
+// Read database
+export function readDb(): DbSchema {
+  initDb();
+  try {
+    const raw = fs.readFileSync(DB_FILE, "utf8");
+    const data = JSON.parse(raw) as DbSchema;
+    
+    // Auto-migrate if reviews key does not exist yet
+    if (!data.reviews) {
+      data.reviews = initialReviews;
+      try {
+        fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), "utf8");
+      } catch (writeErr) {
+        console.error("Failed to write back migrated reviews", writeErr);
+      }
+    }
+    
+    return data;
+  } catch (error) {
+    console.error("Error reading database file, returning fresh seeds.", error);
+    return {
+      categories: initialCategories,
+      menuItems: initialMenuItems,
+      orders: getInitialOrders(),
+      coupons: initialCoupons,
+      settings: initialSettings,
+      reviews: initialReviews
+    };
+  }
+}
+
+// Write database
+export function writeDb(data: DbSchema): void {
+  initDb();
+  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), "utf8");
+}

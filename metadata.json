@@ -1,0 +1,6 @@
+{
+  "name": "Punique Kitchen",
+  "description": "A production-ready food ordering and admin platform for Punique Kitchen in Yenagoa, Bayelsa State, Nigeria, featuring order tracking, an admin dashboard, and Paystack payment integration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
