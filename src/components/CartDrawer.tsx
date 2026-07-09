@@ -475,6 +475,13 @@ export default function CartDrawer({
                   <Sparkles className="h-4 w-4" />
                   <span>Secure Online Checkout</span>
                 </button>
+
+                {subtotal > 0 && (
+                  <div className="mt-3.5 bg-brand-orange/5 border border-brand-orange/15 rounded-xl px-3 py-2.5 text-[11px] font-medium text-brand-orange flex items-center justify-center space-x-1.5 animate-fadeIn">
+                    <Sparkles className="h-3.5 w-3.5 animate-pulse text-brand-gold shrink-0" />
+                    <span>You'll earn <strong className="font-extrabold">{Math.floor(subtotal / 100)}</strong> Loyalty Points from this delicious order!</span>
+                  </div>
+                )}
               </form>
             </>
           )}

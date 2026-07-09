@@ -14,6 +14,30 @@ import OrderHistory from "./components/OrderHistory";
 import Reviews from "./components/Reviews";
 import { MenuItem, Category, Order, Coupon, KitchenSettings } from "./types";
 
+const HERO_DISHES = [
+  {
+    name: "Bayelsa Native Seafood Okra",
+    tagline: "Good meal equal happy bellies! 🦀",
+    description: "Slimy rich okra broth loaded with fresh periwinkles, baby crabs, prawns, stockfish, and local seafood spices.",
+    price: 2800,
+    imageUrl: "https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?auto=format&fit=crop&q=80&w=700",
+  },
+  {
+    name: "Smokey Firewood Party Jollof",
+    tagline: "Authentic local flavor! 🔥",
+    description: "Authentic, party-style Nigerian Jollof rice cooked over high heat to achieve that distinct local smokey firewood aroma.",
+    price: 1800,
+    imageUrl: "https://images.unsplash.com/photo-1611143669185-af224c5e3252?auto=format&fit=crop&q=80&w=700",
+  },
+  {
+    name: "Special Asun Rice",
+    tagline: "Spicy charcoal-grilled goodness! 🐐",
+    description: "Spiced Jollof rice tossed with chunks of fiery peppered charcoal-grilled goat meat (Asun), bell peppers, and raw onions.",
+    price: 2200,
+    imageUrl: "https://images.unsplash.com/photo-1541832676-9b763b0239ab?auto=format&fit=crop&q=80&w=700",
+  }
+];
+
 export default function App() {
   // Data States
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -37,6 +61,9 @@ export default function App() {
 
   // Active Order Tracking State
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
+
+  // Hero section active index
+  const [activeHeroIndex, setActiveHeroIndex] = useState<number>(0);
 
   // Load Storefront Data
   const loadStoreData = async () => {
@@ -220,6 +247,7 @@ export default function App() {
             <OrderTracker
               order={activeOrder}
               kitchenPhone={settings.kitchenPhone}
+              onUpdateOrder={(updated) => setActiveOrder(updated)}
               onClose={() => {
                 setActiveOrder(null);
                 loadStoreData();
@@ -272,18 +300,65 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Hero Dish Visual Grid */}
-                <div className="flex-1 w-full max-w-md lg:max-w-none relative aspect-square sm:aspect-video lg:aspect-square shrink-0 rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10 group">
-                  <img
-                    src="https://images.unsplash.com/photo-1611143669185-af224c5e3252?auto=format&fit=crop&q=80&w=700"
-                    alt="Smokey Jollof Rice"
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                    referrerPolicy="no-referrer"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-6">
-                    <span className="text-[10px] font-bold tracking-widest text-brand-orange uppercase font-mono">Featured Specialty</span>
-                    <h3 className="font-serif text-lg font-bold text-[#FFF9F0] mt-1">Smokey Firewood Party Jollof</h3>
-                    <p className="text-xs text-slate-300 mt-1">Fragrant long-grain rice layered with peppered broth, deep local spices.</p>
+                {/* Hero Food Showcase Carousel */}
+                <div className="flex-1 w-full max-w-lg lg:max-w-none space-y-4 shrink-0">
+                  <div className="relative aspect-[4/3] sm:aspect-video lg:aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10 group bg-slate-900">
+                    <img
+                      src={HERO_DISHES[activeHeroIndex].imageUrl}
+                      alt={HERO_DISHES[activeHeroIndex].name}
+                      className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                      key={activeHeroIndex}
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-6">
+                      <span className="inline-flex items-center space-x-1.5 text-[9px] font-bold tracking-widest text-brand-orange uppercase font-mono bg-brand-orange/15 border border-brand-orange/25 rounded-full px-2.5 py-0.5 w-fit">
+                        ✨ {HERO_DISHES[activeHeroIndex].tagline}
+                      </span>
+                      <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#FFF9F0] mt-2">
+                        {HERO_DISHES[activeHeroIndex].name}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed max-w-md">
+                        {HERO_DISHES[activeHeroIndex].description}
+                      </p>
+                      <div className="flex items-center justify-between mt-3.5 pt-3.5 border-t border-white/10">
+                        <span className="text-lg font-bold text-brand-gold font-mono">
+                          ₦{HERO_DISHES[activeHeroIndex].price.toLocaleString()}
+                        </span>
+                        <a
+                          href="#menu-search-input"
+                          className="rounded-xl bg-brand-orange hover:bg-brand-orange/90 text-white font-bold py-2 px-4 text-[10px] uppercase tracking-wider transition active:scale-95 flex items-center space-x-1"
+                        >
+                          <span>Order Now</span>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Toggle Food Tabs */}
+                  <div className="grid grid-cols-3 gap-2.5">
+                    {HERO_DISHES.map((dish, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setActiveHeroIndex(idx)}
+                        className={`flex flex-col items-center p-2 rounded-2xl border transition text-left cursor-pointer ${
+                          activeHeroIndex === idx
+                            ? "bg-white/15 border-brand-orange text-white"
+                            : "bg-white/5 border-white/10 text-slate-400 hover:bg-white/10"
+                        }`}
+                      >
+                        <div className="h-10 w-full rounded-xl overflow-hidden mb-1.5 hidden sm:block">
+                          <img
+                            src={dish.imageUrl}
+                            alt={dish.name}
+                            className="h-full w-full object-cover"
+                            referrerPolicy="no-referrer"
+                          />
+                        </div>
+                        <span className="text-[9px] font-bold truncate w-full text-center">
+                          {dish.name.replace("Bayelsa Native ", "").replace("Smokey ", "").replace("Special ", "")}
+                        </span>
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -327,13 +402,6 @@ export default function App() {
                     </p>
                   </div>
                 </div>
-              </div>
-            </section>
-
-            {/* ANNOUNCEMENT BANNER */}
-            <section className="bg-brand-orange text-white py-3.5 text-center px-4 overflow-hidden relative">
-              <div className="flex items-center justify-center space-x-2 animate-pulse text-xs font-semibold uppercase tracking-wider font-mono">
-                <span>🔥 SPECIAL PROMO CODE ACTIVE: Use code <span className="font-bold text-brand-green bg-white rounded px-1.5 py-0.5 ml-1 mr-1">PUNIQUE10</span> for 10% off your basket!</span>
               </div>
             </section>
 

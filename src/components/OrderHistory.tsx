@@ -357,6 +357,66 @@ export default function OrderHistory({
                   </button>
                 </div>
 
+                {/* Loyalty Point Tracker Club Card */}
+                {(() => {
+                  const totalPoints = orders
+                    .filter((o) => o.status === OrderStatus.DELIVERED)
+                    .reduce((sum, o) => sum + Math.floor(o.subtotal / 100), 0);
+                  
+                  return (
+                    <div className="bg-gradient-to-br from-brand-green via-[#0c2b18] to-emerald-950 text-white rounded-2xl p-5 shadow-lg border border-emerald-500/10 space-y-4 relative overflow-hidden animate-fadeIn">
+                      {/* Abstract decor circular lights */}
+                      <div className="absolute -top-12 -right-12 h-28 w-28 bg-brand-gold/10 rounded-full blur-2xl pointer-events-none" />
+                      <div className="absolute -bottom-8 -left-8 h-20 w-20 bg-brand-orange/10 rounded-full blur-xl pointer-events-none" />
+
+                      <div className="flex justify-between items-start relative z-10">
+                        <div>
+                          <span className="text-[9px] font-bold text-brand-gold uppercase tracking-widest font-mono block">
+                            Punique Club
+                          </span>
+                          <span className="text-[11px] text-emerald-300 font-medium font-mono">
+                            Loyalty Member Card
+                          </span>
+                        </div>
+                        <div className="rounded-full bg-white/10 p-1.5 text-brand-gold">
+                          <Sparkles className="h-4 w-4 text-brand-gold animate-pulse" />
+                        </div>
+                      </div>
+
+                      <div className="pt-2 relative z-10 flex justify-between items-end">
+                        <div>
+                          <p className="text-[10px] text-emerald-200 uppercase tracking-wide font-medium">Accumulated Balance</p>
+                          <div className="flex items-baseline space-x-1 mt-1">
+                            <span className="text-2xl font-serif font-extrabold text-[#FFF9F0] tracking-tight">{totalPoints}</span>
+                            <span className="text-xs font-bold text-brand-gold">Points</span>
+                          </div>
+                        </div>
+
+                        <div className="text-right text-[10px] text-emerald-300 font-mono font-medium">
+                          <p>Rate: 1 pt / ₦100 spent</p>
+                        </div>
+                      </div>
+
+                      {/* Loyalty Progress Tracker Bar */}
+                      <div className="pt-1.5 space-y-1 relative z-10">
+                        <div className="flex justify-between text-[10px] text-emerald-300">
+                          <span>Progress to Gold Club status</span>
+                          <span>{totalPoints % 150}/150 pts</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-brand-green/40 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-brand-gold rounded-full transition-all duration-500" 
+                            style={{ width: `${Math.min(100, ((totalPoints % 150) / 150) * 100)}%` }}
+                          />
+                        </div>
+                        <p className="text-[9px] text-emerald-400 text-center italic mt-1 font-medium">
+                          Keep ordering to stack up tasty rewards! 🍳
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {/* Section Title */}
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-brand-green uppercase tracking-wider">

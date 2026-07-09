@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { useState, useEffect } from "react";
 import { Check, Clock, MapPin, MessageSquare, Phone, ShoppingBag, Sparkles, Truck } from "lucide-react";
 import { Order, OrderStatus, DeliveryType } from "../types";
 
@@ -10,14 +11,56 @@ interface OrderTrackerProps {
   order: Order | null;
   onClose: () => void;
   kitchenPhone: string;
+  onUpdateOrder?: (updated: Order) => void;
 }
 
 export default function OrderTracker({
   order,
   onClose,
   kitchenPhone,
+  onUpdateOrder,
 }: OrderTrackerProps) {
   if (!order) return null;
+
+  const [totalPoints, setTotalPoints] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (order && order.phone) {
+      fetch("/api/orders")
+        .then((res) => res.json())
+        .then((allOrders: Order[]) => {
+          const cleanPhoneNum = order.phone.trim().replace(/\s+/g, "").replace(/^\+2340/, "+234").replace(/^0/, "+234");
+          const customerOrders = allOrders.filter((o) => {
+            const cleanOrderPhone = o.phone.trim().replace(/\s+/g, "").replace(/^\+2340/, "+234").replace(/^0/, "+234");
+            return cleanOrderPhone === cleanPhoneNum || o.phone === order.phone;
+          });
+          const completedPoints = customerOrders
+            .filter((o) => o.status === OrderStatus.DELIVERED)
+            .reduce((sum, o) => sum + Math.floor(o.subtotal / 100), 0);
+          setTotalPoints(completedPoints);
+        })
+        .catch((err) => console.error("Failed to load loyalty points in tracker", err));
+    }
+  }, [order?.status, order?.phone]);
+
+  const handleUpdateStatusSimulated = async (nextStatus: OrderStatus) => {
+    if (!order) return;
+    try {
+      const res = await fetch(`/api/orders/${order.id}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: nextStatus })
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        if (onUpdateOrder) {
+          onUpdateOrder(updated);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to simulate status change", err);
+    }
+  };
 
   const steps = [
     { label: "Received", status: OrderStatus.RECEIVED, description: "We have received your order", icon: Clock },
@@ -218,6 +261,67 @@ export default function OrderTracker({
                   {order.phone}
                 </p>
               </div>
+            </div>
+          </div>
+
+          {/* Loyalty Points Earned / Celebration section */}
+          {order.status === OrderStatus.DELIVERED && (
+            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 rounded-2xl p-5 text-center relative overflow-hidden animate-fadeIn">
+              <div className="absolute top-0 right-0 h-16 w-16 bg-brand-gold/10 rounded-bl-full pointer-events-none" />
+              <Sparkles className="h-7 w-7 text-brand-gold mx-auto animate-bounce shrink-0" />
+              <h3 className="font-serif text-base font-bold text-brand-green mt-1">Loyalty Points Claimed! 🎉</h3>
+              <p className="text-xs text-slate-600 max-w-sm mx-auto leading-relaxed mt-1 font-medium">
+                Success! This completed order has earned you <span className="font-bold text-brand-orange text-sm">{Math.floor(order.subtotal / 100)}</span> Loyalty Points!
+              </p>
+              {totalPoints !== null && (
+                <div className="inline-flex items-center space-x-1.5 bg-white border border-emerald-100 rounded-full px-3.5 py-1.5 text-xs font-bold text-brand-green shadow-sm mt-3">
+                  <Sparkles className="h-3.5 w-3.5 text-brand-gold animate-pulse shrink-0" />
+                  <span>Your Lifetime Balance:</span>
+                  <span className="text-brand-orange">{totalPoints} points</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Staff Simulation Controller (Demo Mode Helper) */}
+          <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-1.5">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-orange opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-orange"></span>
+                </span>
+                <span className="text-[10px] font-bold text-brand-green uppercase tracking-wider font-mono">
+                  Kitchen Simulation Center
+                </span>
+              </div>
+              <span className="text-[9px] text-gray-400 font-medium">
+                Click to step through statuses
+              </span>
+            </div>
+            
+            <div className="flex flex-wrap gap-1.5 justify-center sm:justify-start">
+              {[
+                OrderStatus.RECEIVED,
+                OrderStatus.PREPARING,
+                order.deliveryType === DeliveryType.DELIVERY ? OrderStatus.OUT_FOR_DELIVERY : OrderStatus.READY,
+                OrderStatus.DELIVERED
+              ].map((statusOption) => {
+                const isCurrent = order.status === statusOption;
+                return (
+                  <button
+                    key={statusOption}
+                    onClick={() => handleUpdateStatusSimulated(statusOption)}
+                    className={`px-2.5 py-1.5 rounded-xl text-[9px] font-bold uppercase tracking-wider transition cursor-pointer ${
+                      isCurrent
+                        ? "bg-brand-orange text-white shadow-sm"
+                        : "bg-white border border-slate-200 text-slate-500 hover:bg-slate-100"
+                    }`}
+                  >
+                    {statusOption}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
