@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ShoppingBag, Clock, History, Award, Sparkles, Soup, UtensilsCrossed } from "lucide-react";
 import { KitchenSettings } from "../types";
 
@@ -45,6 +45,20 @@ export default function Navbar({
   loyaltyPoints = 0,
 }: NavbarProps) {
   const currentTier = getLoyaltyTier(loyaltyPoints);
+  const [showLoyaltyTooltip, setShowLoyaltyTooltip] = useState(false);
+  const loyaltyRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (loyaltyRef.current && !loyaltyRef.current.contains(event.target as Node)) {
+        setShowLoyaltyTooltip(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <>
@@ -104,9 +118,10 @@ export default function Navbar({
             </div>
 
             {/* Loyalty Points Visual Indicator */}
-            <div className="relative group">
+            <div className="relative group" ref={loyaltyRef}>
               <button
                 id="btn-loyalty-points"
+                onClick={() => setShowLoyaltyTooltip((prev) => !prev)}
                 className="flex items-center space-x-1 sm:space-x-2 rounded-xl sm:rounded-2xl bg-gradient-to-r from-brand-orange/[0.04] to-brand-gold/[0.08] border border-brand-gold/20 hover:border-brand-gold/45 px-2 py-1 sm:px-3 sm:py-2 text-[10px] sm:text-xs font-bold text-brand-orange transition-all duration-300 shadow-sm cursor-pointer"
               >
                 <div className="relative shrink-0">
@@ -125,7 +140,11 @@ export default function Navbar({
               </button>
 
               {/* Loyalty Tooltip / Hover Card */}
-              <div className="absolute right-0 top-full mt-2 w-60 sm:w-64 origin-top-right rounded-2xl bg-white p-3.5 sm:p-4 shadow-xl border border-slate-100 ring-1 ring-black/5 opacity-0 scale-95 pointer-events-none group-hover:opacity-100 group-hover:scale-100 group-hover:pointer-events-auto transition-all duration-300 z-50">
+              <div className={`absolute right-0 top-full mt-2 w-60 sm:w-64 origin-top-right rounded-2xl bg-white p-3.5 sm:p-4 shadow-xl border border-slate-100 ring-1 ring-black/5 transition-all duration-300 z-50 ${
+                showLoyaltyTooltip
+                  ? "opacity-100 scale-100 pointer-events-auto"
+                  : "opacity-0 scale-95 pointer-events-none group-hover:opacity-100 group-hover:scale-100 group-hover:pointer-events-auto"
+              }`}>
                 <div className="flex items-center space-x-2 pb-2 border-b border-slate-100">
                   <div className="h-7 w-7 rounded-full bg-brand-orange/15 flex items-center justify-center text-brand-orange">
                     <Sparkles className="h-3.5 w-3.5 text-brand-gold" />
