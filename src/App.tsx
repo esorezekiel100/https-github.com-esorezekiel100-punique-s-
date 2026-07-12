@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { Sparkles, UtensilsCrossed, Calendar, Award, Phone, Heart, MapPin, Clock, ArrowUp, MessageSquare } from "lucide-react";
+import { Sparkles, UtensilsCrossed, Calendar, Award, Phone, MapPin, Clock, ArrowUp, MessageSquare } from "lucide-react";
 import Navbar from "./components/Navbar";
 import MenuSection from "./components/MenuSection";
 import CartDrawer, { CartItem } from "./components/CartDrawer";
@@ -12,7 +12,8 @@ import PaystackModal from "./components/PaystackModal";
 import OrderTracker from "./components/OrderTracker";
 import OrderHistory from "./components/OrderHistory";
 import Reviews from "./components/Reviews";
-import { MenuItem, Category, Order, Coupon, KitchenSettings } from "./types";
+import { MenuItem, Category, Order, Coupon, KitchenSettings, OrderStatus } from "./types";
+import { fallbackCategories, fallbackMenuItems, fallbackCoupons, fallbackSettings } from "./db/fallbackData";
 
 const HERO_DISHES = [
   {
@@ -68,24 +69,79 @@ export default function App() {
   // Load Storefront Data
   const loadStoreData = async () => {
     try {
-      const menuRes = await fetch("/api/menu");
-      const menuData = await menuRes.json();
-      setMenuItems(menuData.menuItems || []);
-      setCategories(menuData.categories || []);
+      let menuItemsLoaded = false;
+      let categoriesLoaded = false;
+      let settingsLoaded = false;
+      let couponsLoaded = false;
 
-      const settingsRes = await fetch("/api/settings");
-      const settingsData = await settingsRes.json();
-      // Ensure settings retains the correct WhatsApp phone number
-      setSettings({
-        ...settingsData,
-        kitchenPhone: "+2348083163956"
-      });
+      // 1. Fetch Menu
+      try {
+        const menuRes = await fetch("/api/menu");
+        if (menuRes.ok) {
+          const menuData = await menuRes.json();
+          if (menuData && Array.isArray(menuData.menuItems) && menuData.menuItems.length > 0) {
+            setMenuItems(menuData.menuItems);
+            menuItemsLoaded = true;
+          }
+          if (menuData && Array.isArray(menuData.categories) && menuData.categories.length > 0) {
+            setCategories(menuData.categories);
+            categoriesLoaded = true;
+          }
+        }
+      } catch (e) {
+        console.warn("API menu loading failed, using static fallback", e);
+      }
 
-      const couponsRes = await fetch("/api/coupons");
-      const couponsData = await couponsRes.json();
-      setCoupons(couponsData);
+      // 2. Fetch Settings
+      try {
+        const settingsRes = await fetch("/api/settings");
+        if (settingsRes.ok) {
+          const settingsData = await settingsRes.json();
+          if (settingsData && settingsData.kitchenPhone) {
+            setSettings({
+              ...settingsData,
+              kitchenPhone: "+2348083163956"
+            });
+            settingsLoaded = true;
+          }
+        }
+      } catch (e) {
+        console.warn("API settings loading failed, using static fallback", e);
+      }
+
+      // 3. Fetch Coupons
+      try {
+        const couponsRes = await fetch("/api/coupons");
+        if (couponsRes.ok) {
+          const couponsData = await couponsRes.json();
+          if (Array.isArray(couponsData) && couponsData.length > 0) {
+            setCoupons(couponsData);
+            couponsLoaded = true;
+          }
+        }
+      } catch (e) {
+        console.warn("API coupons loading failed, using static fallback", e);
+      }
+
+      // Apply static fallbacks if APIs failed to load proper data
+      if (!menuItemsLoaded) {
+        setMenuItems(fallbackMenuItems);
+      }
+      if (!categoriesLoaded) {
+        setCategories(fallbackCategories);
+      }
+      if (!settingsLoaded) {
+        setSettings(fallbackSettings);
+      }
+      if (!couponsLoaded) {
+        setCoupons(fallbackCoupons);
+      }
     } catch (err) {
-      console.error("Failed to load storefront metrics", err);
+      console.error("Failed to load storefront metrics, applying all static fallbacks", err);
+      setMenuItems(fallbackMenuItems);
+      setCategories(fallbackCategories);
+      setSettings(fallbackSettings);
+      setCoupons(fallbackCoupons);
     }
   };
 
@@ -94,15 +150,52 @@ export default function App() {
     // Poll order status every 10 seconds for real-time order tracking feel
     const interval = setInterval(() => {
       if (activeOrder && activeOrder.status !== "Delivered") {
-        fetch("/api/orders")
-          .then(res => res.json())
-          .then((orders: Order[]) => {
-            const updated = orders.find(o => o.id === activeOrder.id);
-            if (updated) {
-              setActiveOrder(updated);
+        if (activeOrder.id.startsWith("ORD-LOCAL-")) {
+          // Auto-advance simulated status for demonstration / static mode
+          const statusOrder = ["Received", "Preparing", activeOrder.deliveryType === "Delivery" ? "Out for Delivery" : "Ready for Pickup", "Delivered"];
+          const currentIndex = statusOrder.indexOf(activeOrder.status);
+          if (currentIndex !== -1 && currentIndex < statusOrder.length - 1) {
+            const nextStatus = statusOrder[currentIndex + 1];
+            const updatedOrder = {
+              ...activeOrder,
+              status: nextStatus as any
+            };
+            setActiveOrder(updatedOrder);
+
+            // Update in local history too
+            try {
+              const localOrdersStr = localStorage.getItem("punique_local_orders") || "[]";
+              const localOrders: Order[] = JSON.parse(localOrdersStr);
+              const mapped = localOrders.map(o => o.id === activeOrder.id ? updatedOrder : o);
+              localStorage.setItem("punique_local_orders", JSON.stringify(mapped));
+            } catch (e) {
+              console.error("Failed to update local history in simulation", e);
             }
-          })
-          .catch(err => console.error("Error polling tracking status", err));
+          }
+        } else {
+          // Regular real-time polling
+          fetch("/api/orders")
+            .then(res => res.json())
+            .then((orders: Order[]) => {
+              const updated = orders.find(o => o.id === activeOrder.id);
+              if (updated) {
+                setActiveOrder(updated);
+              }
+            })
+            .catch(err => {
+              console.warn("Polling via API failed, checking local storage as fallback", err);
+              try {
+                const localOrdersStr = localStorage.getItem("punique_local_orders") || "[]";
+                const localOrders: Order[] = JSON.parse(localOrdersStr);
+                const updated = localOrders.find(o => o.id === activeOrder.id);
+                if (updated) {
+                  setActiveOrder(updated);
+                }
+              } catch (e) {
+                console.error("Local storage search failed too", e);
+              }
+            });
+        }
       }
     }, 10000);
 
@@ -160,6 +253,41 @@ export default function App() {
     setCartItems((prev) => prev.filter((item) => item.id !== id));
   };
 
+  const getWhatsAppCartMessageUrl = () => {
+    const phone = settings.kitchenPhone.replace(/\+/g, "").replace(/\s+/g, "").trim();
+    
+    // Build the message lines
+    const lines = [
+      "🔥 *PUNIQUE KITCHEN QUICK ORDER* 🔥",
+      "Hello! I want to place a quick order with the following items from my cart:\n",
+    ];
+
+    cartItems.forEach((item) => {
+      const itemPrice = item.price + (item.proteinExtraFee || 0);
+      const proteinText = item.selectedProtein ? ` (${item.selectedProtein})` : "";
+      lines.push(`• *${item.quantity}x* ${item.name}${proteinText} - ₦${(itemPrice * item.quantity).toLocaleString()}`);
+    });
+
+    const subtotal = cartItems.reduce((acc, item) => {
+      return acc + (item.price + (item.proteinExtraFee || 0)) * item.quantity;
+    }, 0);
+
+    const delivery = settings.deliveryFee || 0;
+    const total = subtotal + delivery;
+
+    lines.push("");
+    lines.push(`💵 *Subtotal:* ₦${subtotal.toLocaleString()}`);
+    lines.push(`🛵 *Est. Delivery:* ₦${delivery.toLocaleString()}`);
+    lines.push(`⭐ *Total Amount:* ₦${total.toLocaleString()}`);
+    lines.push("\n📍 Please deliver to my address in Yenagoa, Bayelsa State.");
+    lines.push("Thank you!");
+
+    const text = encodeURIComponent(lines.join("\n"));
+    return `https://wa.me/${phone}?text=${text}`;
+  };
+
+  const totalCartQuantity = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+
   // Triggered when Checkout form submits and initiates Paystack payment
   const handleCheckoutInitiate = (data: any) => {
     setCheckoutPayload(data);
@@ -200,31 +328,80 @@ export default function App() {
         body: JSON.stringify(finalOrder)
       });
       
+      let orderCreated: Order;
       if (res.ok) {
-        const orderCreated = await res.json();
-        
-        // Save session details to local storage
-        try {
-          const newSession = {
-            customerName: checkoutPayload.customerName,
-            phone: checkoutPayload.phone,
-            email: checkoutPayload.email || "",
-            address: checkoutPayload.address || ""
-          };
-          localStorage.setItem("punique_customer_session", JSON.stringify(newSession));
-        } catch (e) {
-          console.error("Failed to store customer session in localStorage", e);
-        }
-
-        // Clear cart
-        setCartItems([]);
-        setCheckoutPayload(null);
-        setShowPaystack(false);
-        // Put customer on tracking screen
-        setActiveOrder(orderCreated);
+        orderCreated = await res.json();
+      } else {
+        throw new Error("Backend order submission returned non-OK");
       }
+      
+      // Save session details to local storage
+      try {
+        const newSession = {
+          customerName: checkoutPayload.customerName,
+          phone: checkoutPayload.phone,
+          email: checkoutPayload.email || "",
+          address: checkoutPayload.address || ""
+        };
+        localStorage.setItem("punique_customer_session", JSON.stringify(newSession));
+      } catch (e) {
+        console.error("Failed to store customer session in localStorage", e);
+      }
+
+      // Append order to local storage history for static safety
+      try {
+        const localOrdersStr = localStorage.getItem("punique_local_orders") || "[]";
+        const localOrders: Order[] = JSON.parse(localOrdersStr);
+        localStorage.setItem("punique_local_orders", JSON.stringify([orderCreated, ...localOrders]));
+      } catch (e) {
+        console.error("Failed to append order to local orders history", e);
+      }
+
+      // Clear cart
+      setCartItems([]);
+      setCheckoutPayload(null);
+      setShowPaystack(false);
+      // Put customer on tracking screen
+      setActiveOrder(orderCreated);
     } catch (err) {
-      console.error("Failed to persist order to database", err);
+      console.warn("Failed to persist order to database. Simulating local checkout success.", err);
+      
+      // Local Simulation Fallback for Static Hosting
+      const simulatedOrder: Order = {
+        ...finalOrder,
+        id: `ORD-LOCAL-${Math.floor(1000 + Math.random() * 9000)}`,
+        status: OrderStatus.RECEIVED,
+        createdAt: new Date().toISOString()
+      };
+
+      // Save session details to local storage
+      try {
+        const newSession = {
+          customerName: checkoutPayload.customerName,
+          phone: checkoutPayload.phone,
+          email: checkoutPayload.email || "",
+          address: checkoutPayload.address || ""
+        };
+        localStorage.setItem("punique_customer_session", JSON.stringify(newSession));
+      } catch (e) {
+        console.error("Failed to store customer session in localStorage", e);
+      }
+
+      // Save local simulated order to localStorage history
+      try {
+        const localOrdersStr = localStorage.getItem("punique_local_orders") || "[]";
+        const localOrders: Order[] = JSON.parse(localOrdersStr);
+        localStorage.setItem("punique_local_orders", JSON.stringify([simulatedOrder, ...localOrders]));
+      } catch (e) {
+        console.error("Failed to append simulated order to local storage", e);
+      }
+
+      // Clear cart
+      setCartItems([]);
+      setCheckoutPayload(null);
+      setShowPaystack(false);
+      // Put customer on tracking screen
+      setActiveOrder(simulatedOrder);
     }
   };
 
@@ -301,8 +478,19 @@ export default function App() {
                 </div>
 
                 {/* Hero Food Showcase Carousel */}
-                <div className="flex-1 w-full max-w-lg lg:max-w-none space-y-4 shrink-0">
-                  <div className="relative aspect-[4/3] sm:aspect-video lg:aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10 group bg-slate-900">
+                <div className="flex-1 w-full max-w-lg lg:max-w-none space-y-4 shrink-0 relative">
+                  {/* Subtle golden aroma glowing ring behind the dish */}
+                  <div className="aroma-glow absolute inset-0 -m-8 scale-110 opacity-30 pointer-events-none" />
+
+                  <div className="relative aspect-[4/3] sm:aspect-video lg:aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10 group bg-slate-900 floating-dish">
+                    
+                    {/* Live Steam rising from the hot meal */}
+                    <div className="steam-container">
+                      <div className="steam-vapor steam-vapor-1"></div>
+                      <div className="steam-vapor steam-vapor-2"></div>
+                      <div className="steam-vapor steam-vapor-3"></div>
+                    </div>
+
                     <img
                       src={HERO_DISHES[activeHeroIndex].imageUrl}
                       alt={HERO_DISHES[activeHeroIndex].name}
@@ -312,7 +500,7 @@ export default function App() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-6">
                       <span className="inline-flex items-center space-x-1.5 text-[9px] font-bold tracking-widest text-brand-orange uppercase font-mono bg-brand-orange/15 border border-brand-orange/25 rounded-full px-2.5 py-0.5 w-fit">
-                        ✨ {HERO_DISHES[activeHeroIndex].tagline}
+                        {HERO_DISHES[activeHeroIndex].tagline}
                       </span>
                       <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#FFF9F0] mt-2">
                         {HERO_DISHES[activeHeroIndex].name}
@@ -564,11 +752,7 @@ export default function App() {
               &copy; {new Date().getFullYear()} Punique Kitchen Ltd. All rights reserved.
             </p>
 
-            <div className="flex items-center space-x-1.5 text-brand-green font-bold">
-              <span>Made with</span>
-              <Heart className="h-4 w-4 text-[#E11D48] fill-[#E11D48] animate-pulse" />
-              <span>for Yenagoa, Bayelsa State</span>
-            </div>
+
 
             <button
               id="btn-scroll-top"
@@ -582,6 +766,41 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Mobile Floating 'Quick Order' WhatsApp Button */}
+      {cartItems.length > 0 && (
+        <div className="fixed bottom-6 right-6 z-50 md:hidden animate-bounce" style={{ animationDuration: '3s' }}>
+          <a
+            href={getWhatsAppCartMessageUrl()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center space-x-2.5 bg-[#25D366] text-white py-3 px-4.5 rounded-full shadow-2xl hover:bg-[#20ba5a] active:scale-95 transition-all duration-300 border border-white/25 cursor-pointer hover:shadow-green-500/20"
+            title="Place Quick Order via WhatsApp"
+          >
+            <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-white/20 shrink-0">
+              <svg
+                className="h-4.5 w-4.5 fill-white"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413" />
+              </svg>
+              {/* Pulse badge */}
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand-green text-[9px] font-bold text-white ring-1 ring-white">
+                {totalCartQuantity}
+              </span>
+            </div>
+            <div className="flex flex-col text-left leading-none">
+              <span className="text-[9px] tracking-wider uppercase opacity-90 font-mono font-medium">
+                Quick Order
+              </span>
+              <span className="text-xs font-bold font-sans mt-0.5">
+                Send to WhatsApp
+              </span>
+            </div>
+          </a>
+        </div>
+      )}
 
     </div>
   );

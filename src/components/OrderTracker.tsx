@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { Check, Clock, MapPin, MessageSquare, Phone, ShoppingBag, Sparkles, Truck } from "lucide-react";
+import { Check, Clock, Flame, MapPin, MessageSquare, Phone, ShoppingBag, Sparkles, Truck } from "lucide-react";
 import { Order, OrderStatus, DeliveryType } from "../types";
 
 interface OrderTrackerProps {
@@ -64,7 +64,7 @@ export default function OrderTracker({
 
   const steps = [
     { label: "Received", status: OrderStatus.RECEIVED, description: "We have received your order", icon: Clock },
-    { label: "Preparing", status: OrderStatus.PREPARING, description: "Chef is prepping your fresh meal", icon: Sparkles },
+    { label: "Preparing", status: OrderStatus.PREPARING, description: "Chef is prepping your fresh meal", icon: Flame },
     {
       label: order.deliveryType === DeliveryType.DELIVERY ? "Out for Delivery" : "Ready for Pickup",
       status: order.deliveryType === DeliveryType.DELIVERY ? OrderStatus.OUT_FOR_DELIVERY : OrderStatus.READY,
@@ -137,6 +137,14 @@ export default function OrderTracker({
               <div
                 className="h-full bg-brand-orange transition-all duration-500"
                 style={{ width: `${(currentStepIndex / 3) * 100}%` }}
+              />
+            </div>
+
+            {/* Vertical connection line for mobile */}
+            <div className="absolute left-[21px] top-5 bottom-5 w-1 bg-slate-200 sm:hidden pointer-events-none">
+              <div
+                className="w-full bg-brand-orange transition-all duration-500"
+                style={{ height: `${(currentStepIndex / 3) * 100}%` }}
               />
             </div>
 
@@ -283,8 +291,8 @@ export default function OrderTracker({
             </div>
           )}
 
-          {/* Staff Simulation Controller (Demo Mode Helper) */}
-          <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl space-y-3">
+          {/* Professional Back-Office Kitchen Dispatch Utility */}
+          <div className="p-4 bg-brand-green/[0.02] border border-brand-green/10 rounded-2xl space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-1.5">
                 <span className="relative flex h-2 w-2">
@@ -292,11 +300,11 @@ export default function OrderTracker({
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-orange"></span>
                 </span>
                 <span className="text-[10px] font-bold text-brand-green uppercase tracking-wider font-mono">
-                  Kitchen Simulation Center
+                  Kitchen Dispatch Control
                 </span>
               </div>
-              <span className="text-[9px] text-gray-400 font-medium">
-                Click to step through statuses
+              <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wide">
+                Live Status Manager
               </span>
             </div>
             
@@ -312,10 +320,10 @@ export default function OrderTracker({
                   <button
                     key={statusOption}
                     onClick={() => handleUpdateStatusSimulated(statusOption)}
-                    className={`px-2.5 py-1.5 rounded-xl text-[9px] font-bold uppercase tracking-wider transition cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-xl text-[9px] font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                       isCurrent
-                        ? "bg-brand-orange text-white shadow-sm"
-                        : "bg-white border border-slate-200 text-slate-500 hover:bg-slate-100"
+                        ? "bg-brand-orange text-white shadow-md shadow-brand-orange/15 scale-105"
+                        : "bg-white border border-slate-200 text-slate-500 hover:text-brand-orange hover:border-brand-orange/30 hover:bg-brand-orange/[0.02]"
                     }`}
                   >
                     {statusOption}

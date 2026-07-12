@@ -183,7 +183,7 @@ export default function MenuSection({
           {filteredItems.map((item) => (
             <div
               key={item.id}
-              className={`relative flex flex-col justify-between overflow-hidden rounded-3xl bg-white border border-slate-100 shadow-sm transition duration-300 hover:shadow-md hover:border-slate-200 group ${
+              className={`relative flex flex-col justify-between overflow-hidden rounded-3xl bg-white border border-slate-100 shadow-sm premium-card-transition group ${
                 !item.inStock ? "opacity-75" : ""
               }`}
             >
@@ -198,7 +198,14 @@ export default function MenuSection({
               )}
 
               {/* Dish Image */}
-              <div className="aspect-video w-full overflow-hidden bg-slate-50">
+              <div className="aspect-video w-full overflow-hidden bg-slate-50 relative">
+                {item.inStock && (
+                  <div className="steam-container opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <div className="steam-vapor steam-vapor-1"></div>
+                    <div className="steam-vapor steam-vapor-2"></div>
+                    <div className="steam-vapor steam-vapor-3"></div>
+                  </div>
+                )}
                 <img
                   src={item.imageUrl}
                   alt={item.name}

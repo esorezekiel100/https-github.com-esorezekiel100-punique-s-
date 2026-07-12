@@ -91,11 +91,24 @@ export default function OrderHistory({
     setLoading(true);
     setSystemError("");
     try {
-      const res = await fetch("/api/orders");
-      if (!res.ok) {
-        throw new Error("Failed to load orders database");
+      let allOrders: Order[] = [];
+      try {
+        const res = await fetch("/api/orders");
+        if (res.ok) {
+          allOrders = await res.json();
+        } else {
+          throw new Error("Failed to load orders from API");
+        }
+      } catch (apiErr) {
+        console.warn("API orders loading failed, falling back to localStorage", apiErr);
+        try {
+          const localOrdersStr = localStorage.getItem("punique_local_orders") || "[]";
+          allOrders = JSON.parse(localOrdersStr);
+        } catch (parseErr) {
+          console.error("Failed to parse local orders", parseErr);
+          allOrders = [];
+        }
       }
-      const allOrders: Order[] = await res.json();
       
       // Normalize and filter by phone number
       const cleanPhoneNum = phoneNum.trim().replace(/\s+/g, "").replace(/^\+2340/, "+234").replace(/^0/, "+234");
@@ -207,16 +220,15 @@ export default function OrderHistory({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
+    <div className="fixed inset-0 z-50 overflow-hidden flex justify-end bg-black/60 backdrop-blur-sm">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+        className="absolute inset-0"
         onClick={onClose}
       />
 
-      <div className="absolute inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
-        {/* Drawer Panel */}
-        <div className="w-screen max-w-md transform bg-white shadow-2xl transition-all border-l border-slate-100 flex flex-col h-full font-sans">
+      {/* Drawer Panel */}
+      <div className="relative w-full max-w-md bg-white shadow-2xl border-l border-slate-100 flex flex-col h-full font-sans">
           
           {/* Header */}
           <div className="bg-brand-green p-6 text-white flex items-center justify-between relative overflow-hidden shrink-0">
@@ -588,6 +600,5 @@ export default function OrderHistory({
 
         </div>
       </div>
-    </div>
   );
 }
