@@ -21,21 +21,21 @@ const HERO_DISHES = [
     tagline: "Good meal equal happy bellies! 🦀",
     description: "Slimy rich okra broth loaded with fresh periwinkles, baby crabs, prawns, stockfish, and local seafood spices.",
     price: 2800,
-    imageUrl: "https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?auto=format&fit=crop&q=80&w=700",
+    imageUrl: "/src/assets/images/bayelsa_seafood_okra_1783865739908.jpg",
   },
   {
     name: "Smokey Firewood Party Jollof",
     tagline: "Authentic local flavor! 🔥",
     description: "Authentic, party-style Nigerian Jollof rice cooked over high heat to achieve that distinct local smokey firewood aroma.",
     price: 1800,
-    imageUrl: "https://images.unsplash.com/photo-1611143669185-af224c5e3252?auto=format&fit=crop&q=80&w=700",
+    imageUrl: "/src/assets/images/smokey_firewood_party_jollof_1783866653804.jpg",
   },
   {
     name: "Special Asun Rice",
     tagline: "Spicy charcoal-grilled goodness! 🐐",
     description: "Spiced Jollof rice tossed with chunks of fiery peppered charcoal-grilled goat meat (Asun), bell peppers, and raw onions.",
     price: 2200,
-    imageUrl: "https://images.unsplash.com/photo-1541832676-9b763b0239ab?auto=format&fit=crop&q=80&w=700",
+    imageUrl: "/src/assets/images/special_asun_rice_1783865130355.jpg",
   }
 ];
 

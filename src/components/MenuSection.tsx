@@ -22,6 +22,7 @@ export default function MenuSection({
   const [searchWord, setSearchWord] = useState<string>("");
   const [proteinModalItem, setProteinModalItem] = useState<MenuItem | null>(null);
   const [selectedProtein, setSelectedProtein] = useState<string>("");
+  const [showNutrition, setShowNutrition] = useState<boolean>(true);
 
   // Filter items
   const filteredItems = menuItems.filter((item) => {
@@ -101,6 +102,30 @@ export default function MenuSection({
                     <p className="mt-2 text-xs text-slate-300 leading-relaxed font-light">
                       {item.description}
                     </p>
+
+                    {/* Nutrition info in Dark Specials Card */}
+                    {showNutrition && item.nutrition && (
+                      <div className="mt-3.5 flex flex-wrap gap-1.5 text-[10px] font-semibold text-slate-200">
+                        <span className="inline-flex items-center rounded-lg bg-white/10 px-2 py-1 border border-white/5 backdrop-blur-xs" title="Calories">
+                          🔥 {item.nutrition.calories} kcal
+                        </span>
+                        {item.nutrition.protein && (
+                          <span className="inline-flex items-center rounded-lg bg-white/10 px-2 py-1 border border-white/5 backdrop-blur-xs" title="Protein">
+                            🥩 P: {item.nutrition.protein}
+                          </span>
+                        )}
+                        {item.nutrition.carbs && (
+                          <span className="inline-flex items-center rounded-lg bg-white/10 px-2 py-1 border border-white/5 backdrop-blur-xs" title="Carbohydrates">
+                            🍞 C: {item.nutrition.carbs}
+                          </span>
+                        )}
+                        {item.nutrition.fat && (
+                          <span className="inline-flex items-center rounded-lg bg-white/10 px-2 py-1 border border-white/5 backdrop-blur-xs" title="Fats">
+                            🥑 F: {item.nutrition.fat}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div className="mt-4 flex items-center justify-between pt-4 border-t border-white/10">
                     <div>
@@ -172,8 +197,24 @@ export default function MenuSection({
             className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 py-3 text-xs text-gray-800 placeholder-gray-400 focus:border-brand-orange focus:outline-none focus:ring-1 focus:ring-brand-orange font-medium"
           />
         </div>
-        <div className="text-xs text-gray-400 font-medium">
-          Showing <span className="font-bold text-brand-green">{filteredItems.length}</span> delicious items
+        <div className="flex items-center space-x-3 w-full sm:w-auto justify-between sm:justify-end">
+          <button
+            id="toggle-nutrition-info"
+            onClick={() => setShowNutrition((prev) => !prev)}
+            className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+              showNutrition 
+                ? "bg-brand-orange/[0.04] text-brand-orange border-brand-orange/30 shadow-xs"
+                : "bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100"
+            }`}
+          >
+            <span>🥗</span>
+            <span>Nutrition Facts</span>
+            <span className={`w-1.5 h-1.5 rounded-full ${showNutrition ? "bg-brand-orange" : "bg-slate-400"}`}></span>
+          </button>
+
+          <div className="text-xs text-gray-400 font-medium shrink-0">
+            Showing <span className="font-bold text-brand-green">{filteredItems.length}</span> delicious items
+          </div>
         </div>
       </div>
 
@@ -225,6 +266,30 @@ export default function MenuSection({
                   <p className="mt-2 text-xs text-gray-500 line-clamp-2 leading-relaxed">
                     {item.description}
                   </p>
+
+                  {/* Nutrition info */}
+                  {showNutrition && item.nutrition && (
+                    <div className="mt-3 flex flex-wrap gap-1.5 text-[10px] font-semibold">
+                      <span className="inline-flex items-center rounded-lg bg-orange-50 px-2 py-0.5 text-orange-700 border border-orange-100/70" title="Calories">
+                        🔥 {item.nutrition.calories} kcal
+                      </span>
+                      {item.nutrition.protein && (
+                        <span className="inline-flex items-center rounded-lg bg-emerald-50 px-2 py-0.5 text-emerald-700 border border-emerald-100/70" title="Protein">
+                          🥩 P: {item.nutrition.protein}
+                        </span>
+                      )}
+                      {item.nutrition.carbs && (
+                        <span className="inline-flex items-center rounded-lg bg-blue-50 px-2 py-0.5 text-blue-700 border border-blue-100/70" title="Carbohydrates">
+                          🍞 C: {item.nutrition.carbs}
+                        </span>
+                      )}
+                      {item.nutrition.fat && (
+                        <span className="inline-flex items-center rounded-lg bg-purple-50 px-2 py-0.5 text-purple-700 border border-purple-100/70" title="Fats">
+                          🥑 F: {item.nutrition.fat}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-5 flex items-center justify-between pt-4 border-t border-slate-100">

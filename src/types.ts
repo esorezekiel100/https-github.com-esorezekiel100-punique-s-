@@ -23,6 +23,13 @@ export interface Category {
   imageUrl: string;
 }
 
+export interface NutritionalInfo {
+  calories: number;
+  protein?: string;
+  carbs?: string;
+  fat?: string;
+}
+
 export interface MenuItem {
   id: string;
   name: string;
@@ -33,6 +40,7 @@ export interface MenuItem {
   inStock: boolean;
   isTodaySpecial?: boolean;
   proteinOptions?: string[]; // E.g., ["Beef", "Goat Meat", "Fish"]
+  nutrition?: NutritionalInfo;
   createdAt: string;
 }
 

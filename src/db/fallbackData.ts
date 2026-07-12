@@ -16,9 +16,10 @@ export const fallbackMenuItems: MenuItem[] = [
     description: "Rich, creamy slow-cooked shredded beef tucked inside warm toasted artisanal bread with special house sauce.",
     price: 1000,
     categoryId: "cat-1",
-    imageUrl: "https://images.unsplash.com/photo-1521390188846-e2a3a97453a0?auto=format&fit=crop&q=80&w=500",
+    imageUrl: "/src/assets/images/creamy_beef_sandwich_1783867694389.jpg",
     inStock: true,
     isTodaySpecial: false,
+    nutrition: { calories: 540, protein: "25g", carbs: "48g", fat: "19g" },
     createdAt: "2026-07-08T10:00:00.000Z"
   },
   {
@@ -27,9 +28,10 @@ export const fallbackMenuItems: MenuItem[] = [
     description: "Thick, golden, buttermilk pancakes served hot with a dollop of premium butter and sweet syrup.",
     price: 1000,
     categoryId: "cat-1",
-    imageUrl: "https://images.unsplash.com/photo-1528207776546-365bb710ee93?auto=format&fit=crop&q=80&w=500",
+    imageUrl: "/src/assets/images/golden_fluffy_pancakes_1783867783062.jpg",
     inStock: true,
     isTodaySpecial: false,
+    nutrition: { calories: 480, protein: "8g", carbs: "65g", fat: "14g" },
     createdAt: "2026-07-08T10:00:00.000Z"
   },
   {
@@ -38,9 +40,10 @@ export const fallbackMenuItems: MenuItem[] = [
     description: "Wok-tossed noodles packed with shredded carrots, bell peppers, local bayelsa chili spices, finished with a fried egg.",
     price: 1400,
     categoryId: "cat-2",
-    imageUrl: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&q=80&w=500",
+    imageUrl: "/src/assets/images/stir_fry_noodles_egg_1783865362023.jpg",
     inStock: true,
     isTodaySpecial: true,
+    nutrition: { calories: 620, protein: "18g", carbs: "72g", fat: "22g" },
     createdAt: "2026-07-08T10:00:00.000Z"
   },
   {
@@ -49,9 +52,10 @@ export const fallbackMenuItems: MenuItem[] = [
     description: "Authentic, party-style Nigerian Jollof rice cooked over high heat to achieve that distinct local smokey firewood aroma.",
     price: 1800,
     categoryId: "cat-3",
-    imageUrl: "https://images.unsplash.com/photo-1611143669185-af224c5e3252?auto=format&fit=crop&q=80&w=500",
+    imageUrl: "/src/assets/images/smokey_jollof_rice_1783865479007.jpg",
     inStock: true,
     isTodaySpecial: false,
+    nutrition: { calories: 680, protein: "24g", carbs: "90g", fat: "18g" },
     createdAt: "2026-07-08T10:00:00.000Z"
   },
   {
@@ -63,6 +67,7 @@ export const fallbackMenuItems: MenuItem[] = [
     imageUrl: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&q=80&w=500",
     inStock: true,
     isTodaySpecial: false,
+    nutrition: { calories: 610, protein: "20g", carbs: "82g", fat: "16g" },
     createdAt: "2026-07-08T10:00:00.000Z"
   },
   {
@@ -71,9 +76,10 @@ export const fallbackMenuItems: MenuItem[] = [
     description: "Spiced Jollof rice tossed with chunks of fiery peppered charcoal-grilled goat meat (Asun), bell peppers, and raw onions.",
     price: 2200,
     categoryId: "cat-3",
-    imageUrl: "https://images.unsplash.com/photo-1541832676-9b763b0239ab?auto=format&fit=crop&q=80&w=500",
+    imageUrl: "/src/assets/images/special_asun_rice_1783865130355.jpg",
     inStock: true,
     isTodaySpecial: true,
+    nutrition: { calories: 750, protein: "38g", carbs: "85g", fat: "28g" },
     createdAt: "2026-07-08T10:00:00.000Z"
   },
   {
@@ -82,10 +88,11 @@ export const fallbackMenuItems: MenuItem[] = [
     description: "Thick melon seed soup steamed with rich palm oil, crayfish, bitterleaf, and Nigerian traditional spices. Select your protein option!",
     price: 2500,
     categoryId: "cat-4",
-    imageUrl: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&q=80&w=500",
+    imageUrl: "/src/assets/images/rich_egusi_soup_1783865915668.jpg",
     inStock: true,
     proteinOptions: ["Assorted Beef (+₦500)", "Local Goat Meat (+₦800)", "Fresh Catfish (+₦1,000)"],
     isTodaySpecial: false,
+    nutrition: { calories: 580, protein: "28g", carbs: "14g", fat: "42g" },
     createdAt: "2026-07-08T10:00:00.000Z"
   },
   {
@@ -94,10 +101,11 @@ export const fallbackMenuItems: MenuItem[] = [
     description: "Good meal equal happy bellies! Slimy rich okra broth loaded with fresh periwinkles, baby crabs, prawns, stockfish, and local seafood spices.",
     price: 2800,
     categoryId: "cat-4",
-    imageUrl: "https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?auto=format&fit=crop&q=80&w=500",
+    imageUrl: "/src/assets/images/bayelsa_seafood_okra_1783865739908.jpg",
     inStock: true,
     proteinOptions: ["Fresh Catfish (+₦1,000)", "Extra Jumbo Prawns (+₦1,200)", "Smoked Fish (+₦600)"],
     isTodaySpecial: true,
+    nutrition: { calories: 450, protein: "32g", carbs: "12g", fat: "24g" },
     createdAt: "2026-07-08T10:00:00.000Z"
   },
   {
@@ -106,10 +114,11 @@ export const fallbackMenuItems: MenuItem[] = [
     description: "Nutritious waterleaf and wild Afang leaves ground fine and simmered slow with rich palm oil, cow skin (kpomo), and stockfish.",
     price: 2700,
     categoryId: "cat-4",
-    imageUrl: "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&q=80&w=500",
+    imageUrl: "/src/assets/images/efik_afang_soup_1783866155901.jpg",
     inStock: true,
     proteinOptions: ["Beef (+₦500)", "Goat Meat (+₦800)", "Dry Fish (+₦600)"],
     isTodaySpecial: false,
+    nutrition: { calories: 520, protein: "26g", carbs: "10g", fat: "38g" },
     createdAt: "2026-07-08T10:00:00.000Z"
   },
   {
@@ -118,9 +127,10 @@ export const fallbackMenuItems: MenuItem[] = [
     description: "Aromatic, thick curry gravy packed with tender cuts of beef, chopped Irish potatoes, carrots, and warm spices.",
     price: 1500,
     categoryId: "cat-5",
-    imageUrl: "https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?auto=format&fit=crop&q=80&w=500",
+    imageUrl: "/src/assets/images/beef_curry_sauce_1783866305014.jpg",
     inStock: true,
     isTodaySpecial: false,
+    nutrition: { calories: 490, protein: "22g", carbs: "32g", fat: "20g" },
     createdAt: "2026-07-08T10:00:00.000Z"
   },
   {
@@ -129,9 +139,10 @@ export const fallbackMenuItems: MenuItem[] = [
     description: "Mildly spiced, creamy, golden coconut curry with soft chicken chunks, delicious as a side or over white rice.",
     price: 1500,
     categoryId: "cat-5",
-    imageUrl: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=500",
+    imageUrl: "/src/assets/images/chicken_curry_sauce_1783866932326.jpg",
     inStock: true,
     isTodaySpecial: false,
+    nutrition: { calories: 460, protein: "28g", carbs: "16g", fat: "22g" },
     createdAt: "2026-07-08T10:00:00.000Z"
   },
   {
@@ -140,20 +151,22 @@ export const fallbackMenuItems: MenuItem[] = [
     description: "Deep delta style light broth packed with sea catfish, local river crab, tiger prawns, periwinkles, and yellow peppers. Divine!",
     price: 3500,
     categoryId: "cat-6",
-    imageUrl: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&q=80&w=500",
+    imageUrl: "/src/assets/images/fisherman_soup_premium_1783867187146.jpg",
     inStock: true,
     isTodaySpecial: true,
+    nutrition: { calories: 420, protein: "35g", carbs: "8g", fat: "16g" },
     createdAt: "2026-07-08T10:00:00.000Z"
   },
   {
     id: "menu-13",
-    name: "Gizdodo Special",
-    description: "Diced peppered chicken gizzards and sweet fried Bayelsa plantains (dodo) tossed in a rich, sweet tomato-habanero sauce.",
-    price: 1800,
+    name: "Spicy Nkwobi Delight",
+    description: "Tender, slow-cooked cow foot chunks drenched in a rich, spicy palm oil paste, infused with traditional African ugba (oil bean) and utazi leaves.",
+    price: 3000,
     categoryId: "cat-6",
-    imageUrl: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=500",
+    imageUrl: "/src/assets/images/spicy_nkwobi_delight_1783867394469.jpg",
     inStock: true,
     isTodaySpecial: false,
+    nutrition: { calories: 480, protein: "32g", carbs: "6g", fat: "35g" },
     createdAt: "2026-07-08T10:00:00.000Z"
   },
   {
