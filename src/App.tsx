@@ -63,6 +63,24 @@ export default function App() {
   // Active Order Tracking State
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
 
+  // Loyalty Points State
+  const [loyaltyPoints, setLoyaltyPoints] = useState<number>(0);
+
+  const recalculateLoyaltyPoints = () => {
+    try {
+      const localOrdersStr = localStorage.getItem("punique_local_orders") || "[]";
+      const localOrders = JSON.parse(localOrdersStr);
+      if (Array.isArray(localOrders)) {
+        // Calculate: 1 point for every ₦100 spent
+        const computedPoints = localOrders.reduce((sum, o) => sum + Math.floor((o.total || 0) / 100), 0);
+        setLoyaltyPoints(computedPoints);
+        localStorage.setItem("punique_loyalty_points", computedPoints.toString());
+      }
+    } catch (e) {
+      console.error("Failed to parse local orders for loyalty points", e);
+    }
+  };
+
   // Hero section active index
   const [activeHeroIndex, setActiveHeroIndex] = useState<number>(0);
 
@@ -147,6 +165,7 @@ export default function App() {
 
   useEffect(() => {
     loadStoreData();
+    recalculateLoyaltyPoints();
     // Poll order status every 10 seconds for real-time order tracking feel
     const interval = setInterval(() => {
       if (activeOrder && activeOrder.status !== "Delivered") {
@@ -353,6 +372,7 @@ export default function App() {
         const localOrdersStr = localStorage.getItem("punique_local_orders") || "[]";
         const localOrders: Order[] = JSON.parse(localOrdersStr);
         localStorage.setItem("punique_local_orders", JSON.stringify([orderCreated, ...localOrders]));
+        recalculateLoyaltyPoints();
       } catch (e) {
         console.error("Failed to append order to local orders history", e);
       }
@@ -392,6 +412,7 @@ export default function App() {
         const localOrdersStr = localStorage.getItem("punique_local_orders") || "[]";
         const localOrders: Order[] = JSON.parse(localOrdersStr);
         localStorage.setItem("punique_local_orders", JSON.stringify([simulatedOrder, ...localOrders]));
+        recalculateLoyaltyPoints();
       } catch (e) {
         console.error("Failed to append simulated order to local storage", e);
       }
@@ -414,6 +435,7 @@ export default function App() {
         onOpenCart={() => setIsCartOpen(true)}
         settings={settings}
         onOpenHistory={() => setIsHistoryOpen(true)}
+        loyaltyPoints={loyaltyPoints}
       />
 
       {/* 2. Main Area Routing */}

@@ -155,6 +155,39 @@ export const fallbackMenuItems: MenuItem[] = [
     inStock: true,
     isTodaySpecial: false,
     createdAt: "2026-07-08T10:00:00.000Z"
+  },
+  {
+    id: "menu-14",
+    name: "Charcoal Grilled Bole & Fish (Delta Special)",
+    description: "Sweet golden yellow plantains and richly seasoned fresh catfish grilled over open coal fire, served with raw onion salsa and our hot native palm oil sauce.",
+    price: 3200,
+    categoryId: "cat-2",
+    imageUrl: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&q=80&w=500",
+    inStock: true,
+    isTodaySpecial: true,
+    createdAt: "2026-07-12T10:00:00.000Z"
+  },
+  {
+    id: "menu-15",
+    name: "Seafood Fried Rice (Supreme Hub)",
+    description: "Fragrant seasoned rice stir-fried in a hot wok, loaded with prawns, crab claws, periwinkles, sweet peas, and high-heat local spices.",
+    price: 3400,
+    categoryId: "cat-2",
+    imageUrl: "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&q=80&w=500",
+    inStock: true,
+    isTodaySpecial: false,
+    createdAt: "2026-07-12T10:00:00.000Z"
+  },
+  {
+    id: "menu-16",
+    name: "Peppery Snail & Plantain Hotpot",
+    description: "Fleshy forest snails and green plantain wheels simmered in an aromatic, peppery scent-leaf infusion. Extremely rich and energizing Delta delicacy.",
+    price: 3500,
+    categoryId: "cat-2",
+    imageUrl: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&q=80&w=500",
+    inStock: true,
+    isTodaySpecial: true,
+    createdAt: "2026-07-12T10:00:00.000Z"
   }
 ];
 
