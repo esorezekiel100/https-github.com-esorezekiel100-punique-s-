@@ -66,10 +66,10 @@ export default function Navbar({
         {/* Animated accent ribbon */}
         <div className="h-1 w-full bg-gradient-to-r from-brand-orange via-brand-gold to-brand-green" />
 
-        <div className="mx-auto flex h-16 sm:h-20 max-w-7xl items-center justify-between px-3 sm:px-6">
+        <div className="mx-auto flex h-16 sm:h-20 max-w-7xl items-center justify-between px-2 min-[375px]:px-3 sm:px-6">
           {/* Logo & Brand (Interactive Food Logo) */}
-          <div className="flex cursor-pointer items-center space-x-2 sm:space-x-3 group/logo">
-            <div className="relative flex h-9 w-9 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-br from-brand-orange via-brand-orange to-brand-gold text-white shadow-md sm:shadow-lg shadow-brand-orange/20 group-hover/logo:scale-105 group-hover/logo:rotate-3 transition-all duration-300 overflow-hidden shrink-0">
+          <div className="flex cursor-pointer items-center space-x-1 min-[375px]:space-x-2 sm:space-x-3 group/logo">
+            <div className="relative flex h-8 w-8 min-[375px]:h-9 min-[375px]:w-9 sm:h-12 sm:w-12 items-center justify-center rounded-lg min-[375px]:rounded-xl sm:rounded-2xl bg-gradient-to-br from-brand-orange via-brand-orange to-brand-gold text-white shadow-md sm:shadow-lg shadow-brand-orange/20 group-hover/logo:scale-105 group-hover/logo:rotate-3 transition-all duration-300 overflow-hidden shrink-0">
               <div className="absolute inset-0 bg-black/5 group-hover/logo:bg-transparent transition-colors duration-300" />
               
               {/* Steaming rising particles on logo hover */}
@@ -79,12 +79,12 @@ export default function Navbar({
                 <span className="w-0.5 h-0.5 bg-white/80 rounded-full animate-pulse delay-150" />
               </div>
 
-              <Soup className="h-4.5 w-4.5 sm:h-6 sm:w-6 text-white transform group-hover/logo:scale-110 transition-transform duration-300" />
+              <Soup className="h-4 w-4 min-[375px]:h-4.5 min-[375px]:w-4.5 sm:h-6 sm:w-6 text-white transform group-hover/logo:scale-110 transition-transform duration-300" />
             </div>
 
             <div className="leading-tight">
-              <h1 id="brand-logo" className="font-serif text-base sm:text-2xl font-black tracking-tight text-brand-green flex items-center">
-                PUNIQUE<span className="text-brand-orange ml-1 sm:ml-1.5 relative">
+              <h1 id="brand-logo" className="font-serif text-[12px] min-[375px]:text-sm min-[410px]:text-base sm:text-2xl font-black tracking-tight text-brand-green flex items-center">
+                PUNIQUE<span className="text-brand-orange ml-0.5 min-[375px]:ml-1 sm:ml-1.5 relative">
                   KITCHEN
                   <span className="absolute -bottom-0.5 left-0 w-full h-0.5 bg-brand-orange/70 scale-x-0 group-hover/logo:scale-x-100 transition-transform duration-300 origin-left" />
                 </span>
@@ -96,7 +96,7 @@ export default function Navbar({
           </div>
 
           {/* Status & Actions */}
-          <div className="flex items-center space-x-1.5 sm:space-x-3">
+          <div className="flex items-center space-x-1 min-[375px]:space-x-1.5 sm:space-x-3">
             {/* Store Status Badge with live breathing pulse */}
             <div
               className={`hidden items-center space-x-1 rounded-2xl px-2.5 py-1 text-[10px] sm:text-xs font-semibold md:flex shadow-sm transition-all duration-300 ${
@@ -122,10 +122,10 @@ export default function Navbar({
               <button
                 id="btn-loyalty-points"
                 onClick={() => setShowLoyaltyTooltip((prev) => !prev)}
-                className="flex items-center space-x-1 sm:space-x-2 rounded-xl sm:rounded-2xl bg-gradient-to-r from-brand-orange/[0.04] to-brand-gold/[0.08] border border-brand-gold/20 hover:border-brand-gold/45 px-2 py-1 sm:px-3 sm:py-2 text-[10px] sm:text-xs font-bold text-brand-orange transition-all duration-300 shadow-sm cursor-pointer"
+                className="flex items-center space-x-0.5 min-[375px]:space-x-1 sm:space-x-2 rounded-lg min-[375px]:rounded-xl sm:rounded-2xl bg-gradient-to-r from-brand-orange/[0.04] to-brand-gold/[0.08] border border-brand-gold/20 hover:border-brand-gold/45 px-1.5 py-1 min-[375px]:px-2 min-[375px]:py-1.5 sm:px-3 sm:py-2 text-[9px] min-[375px]:text-[10px] sm:text-xs font-bold text-brand-orange transition-all duration-300 shadow-sm cursor-pointer"
               >
                 <div className="relative shrink-0">
-                  <Award className="h-3.5 w-3.5 sm:h-4.5 sm:w-4.5 text-brand-gold animate-pulse" />
+                  <Award className="h-3 w-3 min-[375px]:h-3.5 min-[375px]:w-3.5 sm:h-4.5 sm:w-4.5 text-brand-gold animate-pulse" />
                   <span className="absolute -top-0.5 -right-0.5 flex h-1 w-1">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-gold opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-1 w-1 bg-brand-gold"></span>
@@ -133,14 +133,14 @@ export default function Navbar({
                 </div>
                 <div className="flex flex-col items-start leading-none text-left">
                   <span className="hidden sm:inline text-[8px] text-slate-400 uppercase tracking-wider font-bold">Club Balance</span>
-                  <span className="font-mono text-[10px] sm:text-xs font-black text-brand-green sm:mt-0.5">
-                    {loyaltyPoints} <span className="text-[8px] sm:text-[9px] font-sans font-extrabold text-brand-orange">PTS</span>
+                  <span className="font-mono text-[9px] min-[375px]:text-[10px] sm:text-xs font-black text-brand-green sm:mt-0.5">
+                    {loyaltyPoints}<span className="text-[7px] min-[375px]:text-[8px] sm:text-[9px] font-sans font-extrabold text-brand-orange ml-0.5">PTS</span>
                   </span>
                 </div>
               </button>
 
               {/* Loyalty Tooltip / Hover Card */}
-              <div className={`absolute right-0 top-full mt-2 w-60 sm:w-64 origin-top-right rounded-2xl bg-white p-3.5 sm:p-4 shadow-xl border border-slate-100 ring-1 ring-black/5 transition-all duration-300 z-50 ${
+              <div className={`absolute right-0 top-full mt-2 w-56 sm:w-64 origin-top-right rounded-2xl bg-white p-3 sm:p-4 shadow-xl border border-slate-100 ring-1 ring-black/5 transition-all duration-300 z-50 ${
                 showLoyaltyTooltip
                   ? "opacity-100 scale-100 pointer-events-auto"
                   : "opacity-0 scale-95 pointer-events-none group-hover:opacity-100 group-hover:scale-100 group-hover:pointer-events-auto"
@@ -178,9 +178,9 @@ export default function Navbar({
               <button
                 id="btn-open-history"
                 onClick={onOpenHistory}
-                className="flex items-center space-x-1 rounded-xl sm:rounded-2xl border border-rose-100 bg-rose-50/40 hover:bg-rose-50/80 px-2 py-1.5 sm:px-3 sm:py-2 text-[10px] sm:text-xs font-bold text-brand-orange hover:text-brand-orange/90 transition cursor-pointer"
+                className="flex items-center space-x-0.5 min-[375px]:space-x-1 rounded-lg min-[375px]:rounded-xl sm:rounded-2xl border border-rose-100 bg-rose-50/40 hover:bg-rose-50/80 px-1.5 py-1 min-[375px]:px-2 min-[375px]:py-1.5 sm:px-3 sm:py-2 text-[9px] min-[375px]:text-[10px] sm:text-xs font-bold text-brand-orange hover:text-brand-orange/90 transition cursor-pointer"
               >
-                <History className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <History className="h-3 w-3 min-[375px]:h-3.5 min-[375px]:w-3.5 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">My Orders</span>
               </button>
             </div>
@@ -189,7 +189,7 @@ export default function Navbar({
             <button
               id="btn-toggle-cart"
               onClick={onOpenCart}
-              className="relative flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl sm:rounded-2xl bg-brand-orange text-white shadow-md shadow-brand-orange/20 transition-all duration-300 hover:bg-brand-orange hover:scale-105 hover:shadow-brand-orange/30 active:scale-95"
+              className="relative flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg min-[375px]:rounded-xl sm:rounded-2xl bg-brand-orange text-white shadow-md shadow-brand-orange/20 transition-all duration-300 hover:bg-brand-orange hover:scale-105 hover:shadow-brand-orange/30 active:scale-95 shrink-0"
             >
               <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5" />
               {cartCount > 0 && (

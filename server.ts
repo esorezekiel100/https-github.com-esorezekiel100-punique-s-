@@ -15,6 +15,10 @@ const PORT = 3000;
 
 app.use(express.json());
 
+// Serve generated image assets in both development and production
+app.use("/src/assets/images", express.static(path.join(process.cwd(), "src/assets/images")));
+app.use("/assets/images", express.static(path.join(process.cwd(), "src/assets/images")));
+
 // Lazy-loaded Gemini AI client setup
 let aiClient: GoogleGenAI | null = null;
 

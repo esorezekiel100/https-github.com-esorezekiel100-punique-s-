@@ -85,7 +85,7 @@ export default function MenuSection({
                   Chef's Special
                 </div>
                 
-                <div className="w-full md:w-1/3 aspect-square md:aspect-auto rounded-xl overflow-hidden shadow-inner bg-white/10 shrink-0">
+                <div className="w-full md:w-1/3 aspect-video md:aspect-square rounded-xl overflow-hidden shadow-inner bg-white/10 shrink-0">
                   <img
                     src={item.imageUrl}
                     alt={item.name}
