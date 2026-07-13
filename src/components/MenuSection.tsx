@@ -335,7 +335,7 @@ export default function MenuSection({
                       className="flex items-center space-x-1 rounded-xl bg-brand-orange hover:bg-brand-orange/95 text-white text-xs font-bold px-3.5 py-2 shadow-sm transition hover:shadow active:scale-95 cursor-pointer"
                     >
                       <ShoppingCart className="h-3.5 w-3.5" />
-                      <span>{item.proteinOptions ? "Customize" : "Add"}</span>
+                      <span>{item.proteinOptions ? "Customize" : "Order"}</span>
                     </button>
                   )}
                 </div>
@@ -425,7 +425,7 @@ export default function MenuSection({
                 onClick={handleAddCustomizedItem}
                 className="w-1/2 rounded-xl bg-brand-orange hover:bg-brand-orange/90 text-xs font-bold text-white py-3 shadow-md shadow-brand-orange/20 transition cursor-pointer"
               >
-                Add To Cart
+                Order
               </button>
             </div>
           </div>
