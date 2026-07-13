@@ -170,6 +170,12 @@ export default function Navbar({
                   <p className="text-[8px] sm:text-[9px] text-slate-500 leading-normal italic font-semibold">
                     {currentTier.perk}
                   </p>
+
+                  <div className="pt-2 border-t border-slate-100 mt-2">
+                    <p className="text-[9px] font-bold text-emerald-700 bg-emerald-50 rounded-lg p-1.5 leading-snug">
+                      🎁 <strong>Food Reward Active!</strong> once you reach 1,000 points you can order food. 1,000 pts is equivalent to ₦1,000 Naira discount!
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

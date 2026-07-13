@@ -21,21 +21,21 @@ const HERO_DISHES = [
     tagline: "Good meal equal happy bellies! 🦀",
     description: "Slimy rich okra broth loaded with fresh periwinkles, baby crabs, prawns, stockfish, and local seafood spices.",
     price: 2800,
-    imageUrl: "/src/assets/images/bayelsa_seafood_okra_1783865739908.jpg",
+    imageUrl: "/assets/images/bayelsa_seafood_okra_1783865739908.jpg",
   },
   {
-    name: "Smokey Firewood Party Jollof",
+    name: "Smokey Jollof Rice",
     tagline: "Authentic local flavor! 🔥",
     description: "Authentic, party-style Nigerian Jollof rice cooked over high heat to achieve that distinct local smokey firewood aroma.",
     price: 1800,
-    imageUrl: "/src/assets/images/smokey_firewood_party_jollof_1783866653804.jpg",
+    imageUrl: "/assets/images/smokey_jollof_rice_1783865479007.jpg",
   },
   {
     name: "Special Asun Rice",
     tagline: "Spicy charcoal-grilled goodness! 🐐",
     description: "Spiced Jollof rice tossed with chunks of fiery peppered charcoal-grilled goat meat (Asun), bell peppers, and raw onions.",
     price: 2200,
-    imageUrl: "/src/assets/images/special_asun_rice_1783865130355.jpg",
+    imageUrl: "/assets/images/special_asun_rice_1783865130355.jpg",
   }
 ];
 
@@ -70,12 +70,33 @@ export default function App() {
     try {
       const localOrdersStr = localStorage.getItem("punique_local_orders") || "[]";
       const localOrders = JSON.parse(localOrdersStr);
-      if (Array.isArray(localOrders)) {
-        // Calculate: 1 point for every ₦100 spent
-        const computedPoints = localOrders.reduce((sum, o) => sum + Math.floor((o.total || 0) / 100), 0);
-        setLoyaltyPoints(computedPoints);
-        localStorage.setItem("punique_loyalty_points", computedPoints.toString());
+      
+      let bonusPoints = 0;
+      const storedBonus = localStorage.getItem("punique_bonus_points");
+      if (storedBonus === null) {
+        // Start from zero point by default as requested
+        localStorage.setItem("punique_bonus_points", "0");
+        bonusPoints = 0;
+      } else {
+        bonusPoints = parseInt(storedBonus, 10) || 0;
       }
+
+      let orderPoints = 0;
+      let redeemedPoints = 0;
+      
+      if (Array.isArray(localOrders)) {
+        // Compute points earned: 1 point per ₦100 of subtotal spent (matching UI indicators)
+        orderPoints = localOrders.reduce((sum, o: any) => {
+          return sum + Math.max(0, Math.floor((o.subtotal || 0) / 100));
+        }, 0);
+        
+        // Sum of all points redeemed across previous orders
+        redeemedPoints = localOrders.reduce((sum, o: any) => sum + (o.pointsRedeemed || 0), 0);
+      }
+
+      const netPoints = Math.max(0, bonusPoints + orderPoints - redeemedPoints);
+      setLoyaltyPoints(netPoints);
+      localStorage.setItem("punique_loyalty_points", netPoints.toString());
     } catch (e) {
       console.error("Failed to parse local orders for loyalty points", e);
     }
@@ -311,20 +332,26 @@ export default function App() {
   const handleCheckoutInitiate = (data: any) => {
     setCheckoutPayload(data);
     setIsCartOpen(false);
-    setShowPaystack(true);
+    if (data.total === 0) {
+      // Direct checkout for 100% loyalty redeemed free orders!
+      handlePaymentSuccess("LOYALTY_REDEEM_FREE_ORDER", data);
+    } else {
+      setShowPaystack(true);
+    }
   };
 
-  // Triggered on Paystack authorization success
-  const handlePaymentSuccess = async (ref: string) => {
-    if (!checkoutPayload) return;
+  // Triggered on Paystack authorization success or direct checkout
+  const handlePaymentSuccess = async (ref: string, directPayload?: any) => {
+    const payload = directPayload || checkoutPayload;
+    if (!payload) return;
     
     // Assemble final order post object
     const finalOrder = {
-      customerName: checkoutPayload.customerName,
-      phone: checkoutPayload.phone,
-      email: checkoutPayload.email || `${checkoutPayload.customerName.toLowerCase().replace(/\s/g, "")}@puniquekitchen.com`,
-      address: checkoutPayload.address,
-      deliveryType: checkoutPayload.deliveryType,
+      customerName: payload.customerName,
+      phone: payload.phone,
+      email: payload.email || `${payload.customerName.toLowerCase().replace(/\s/g, "")}@puniquekitchen.com`,
+      address: payload.address,
+      deliveryType: payload.deliveryType,
       items: cartItems.map(it => ({
         menuItemId: it.menuItemId,
         name: it.name,
@@ -333,11 +360,13 @@ export default function App() {
         selectedProtein: it.selectedProtein,
         proteinExtraFee: it.proteinExtraFee
       })),
-      subtotal: checkoutPayload.subtotal,
-      deliveryFee: checkoutPayload.deliveryFee,
-      discountAmount: checkoutPayload.discountAmount,
-      discountCode: checkoutPayload.couponCode,
-      total: checkoutPayload.total
+      subtotal: payload.subtotal,
+      deliveryFee: payload.deliveryFee,
+      discountAmount: payload.discountAmount,
+      discountCode: payload.couponCode,
+      pointsRedeemed: payload.pointsRedeemed || 0,
+      loyaltyDiscount: payload.loyaltyDiscount || 0,
+      total: payload.total
     };
 
     try {
@@ -357,16 +386,16 @@ export default function App() {
       // Save session details to local storage
       try {
         const newSession = {
-          customerName: checkoutPayload.customerName,
-          phone: checkoutPayload.phone,
-          email: checkoutPayload.email || "",
-          address: checkoutPayload.address || ""
+          customerName: payload.customerName,
+          phone: payload.phone,
+          email: payload.email || "",
+          address: payload.address || ""
         };
         localStorage.setItem("punique_customer_session", JSON.stringify(newSession));
       } catch (e) {
         console.error("Failed to store customer session in localStorage", e);
       }
-
+ 
       // Append order to local storage history for static safety
       try {
         const localOrdersStr = localStorage.getItem("punique_local_orders") || "[]";
@@ -376,7 +405,7 @@ export default function App() {
       } catch (e) {
         console.error("Failed to append order to local orders history", e);
       }
-
+ 
       // Clear cart
       setCartItems([]);
       setCheckoutPayload(null);
@@ -393,20 +422,20 @@ export default function App() {
         status: OrderStatus.RECEIVED,
         createdAt: new Date().toISOString()
       };
-
+ 
       // Save session details to local storage
       try {
         const newSession = {
-          customerName: checkoutPayload.customerName,
-          phone: checkoutPayload.phone,
-          email: checkoutPayload.email || "",
-          address: checkoutPayload.address || ""
+          customerName: payload.customerName,
+          phone: payload.phone,
+          email: payload.email || "",
+          address: payload.address || ""
         };
         localStorage.setItem("punique_customer_session", JSON.stringify(newSession));
       } catch (e) {
         console.error("Failed to store customer session in localStorage", e);
       }
-
+ 
       // Save local simulated order to localStorage history
       try {
         const localOrdersStr = localStorage.getItem("punique_local_orders") || "[]";
@@ -416,7 +445,7 @@ export default function App() {
       } catch (e) {
         console.error("Failed to append simulated order to local storage", e);
       }
-
+ 
       // Clear cart
       setCartItems([]);
       setCheckoutPayload(null);
@@ -519,6 +548,9 @@ export default function App() {
                       className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                       key={activeHeroIndex}
                       referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&q=80&w=600";
+                      }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-6">
                       <span className="inline-flex items-center space-x-1.5 text-[9px] font-bold tracking-widest text-brand-orange uppercase font-mono bg-brand-orange/15 border border-brand-orange/25 rounded-full px-2.5 py-0.5 w-fit">
@@ -562,6 +594,9 @@ export default function App() {
                             alt={dish.name}
                             className="h-full w-full object-cover"
                             referrerPolicy="no-referrer"
+                            onError={(e) => {
+                              e.currentTarget.src = "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&q=80&w=300";
+                            }}
                           />
                         </div>
                         <span className="text-[9px] font-bold truncate w-full text-center">

@@ -44,7 +44,7 @@
       "description": "Rich, creamy slow-cooked shredded beef tucked inside warm toasted artisanal bread with special house sauce.",
       "price": 1000,
       "categoryId": "cat-1",
-      "imageUrl": "/src/assets/images/creamy_beef_sandwich_1783867694389.jpg",
+      "imageUrl": "/assets/images/creamy_beef_sandwich_1783867694389.jpg",
       "inStock": true,
       "isTodaySpecial": false,
       "nutrition": {
@@ -57,13 +57,13 @@
     },
     {
       "id": "menu-2",
-      "name": "Golden Fluffy Pancakes",
+      "name": "Pancakes",
       "description": "Thick, golden, buttermilk pancakes served hot with a dollop of premium butter and sweet syrup.",
       "price": 1000,
       "categoryId": "cat-1",
-      "imageUrl": "/src/assets/images/golden_fluffy_pancakes_1783867783062.jpg",
+      "imageUrl": "/assets/images/golden_fluffy_pancakes_1783867783062.jpg",
       "inStock": true,
-      "isTodaySpecial": false,
+      "isTodaySpecial: false",
       "nutrition": {
         "calories": 480,
         "protein": "8g",
@@ -78,7 +78,7 @@
       "description": "Wok-tossed noodles packed with shredded carrots, bell peppers, local bayelsa chili spices, finished with a fried egg.",
       "price": 1400,
       "categoryId": "cat-2",
-      "imageUrl": "/src/assets/images/stir_fry_noodles_egg_1783865362023.jpg",
+      "imageUrl": "/assets/images/stir_fry_noodles_egg_1783865362023.jpg",
       "inStock": true,
       "isTodaySpecial": true,
       "nutrition": {
@@ -95,7 +95,7 @@
       "description": "Authentic, party-style Nigerian Jollof rice cooked over high heat to achieve that distinct local smokey firewood aroma.",
       "price": 1800,
       "categoryId": "cat-3",
-      "imageUrl": "/src/assets/images/smokey_jollof_rice_1783865479007.jpg",
+      "imageUrl": "/assets/images/smokey_jollof_rice_1783865479007.jpg",
       "inStock": true,
       "isTodaySpecial": false,
       "nutrition": {
@@ -129,8 +129,8 @@
       "description": "Spiced Jollof rice tossed with chunks of fiery peppered charcoal-grilled goat meat (Asun), bell peppers, and raw onions.",
       "price": 2200,
       "categoryId": "cat-3",
-      "imageUrl": "/src/assets/images/special_asun_rice_1783865130355.jpg",
-      "inStock: true,
+      "imageUrl": "/assets/images/special_asun_rice_1783865130355.jpg",
+      "inStock": true,
       "isTodaySpecial": true,
       "nutrition": {
         "calories": 750,
@@ -146,7 +146,7 @@
       "description": "Thick melon seed soup steamed with rich palm oil, crayfish, bitterleaf, and Nigerian traditional spices. Select your protein option!",
       "price": 2500,
       "categoryId": "cat-4",
-      "imageUrl": "/src/assets/images/rich_egusi_soup_1783865915668.jpg",
+      "imageUrl": "/assets/images/rich_egusi_soup_1783865915668.jpg",
       "inStock": true,
       "proteinOptions": [
         "Assorted Beef (+₦500)",
@@ -168,7 +168,7 @@
       "description": "Good meal equal happy bellies! Slimy rich okra broth loaded with fresh periwinkles, baby crabs, prawns, stockfish, and local seafood spices.",
       "price": 2800,
       "categoryId": "cat-4",
-      "imageUrl": "/src/assets/images/bayelsa_seafood_okra_1783865739908.jpg",
+      "imageUrl": "/assets/images/bayelsa_seafood_okra_1783865739908.jpg",
       "inStock": true,
       "proteinOptions": [
         "Fresh Catfish (+₦1,000)",
@@ -190,7 +190,7 @@
       "description": "Nutritious waterleaf and wild Afang leaves ground fine and simmered slow with rich palm oil, cow skin (kpomo), and stockfish.",
       "price": 2700,
       "categoryId": "cat-4",
-      "imageUrl": "/src/assets/images/efik_afang_soup_1783866155901.jpg",
+      "imageUrl": "/assets/images/efik_afang_soup_1783866155901.jpg",
       "inStock": true,
       "proteinOptions": [
         "Beef (+₦500)",
@@ -212,7 +212,7 @@
       "description": "Aromatic, thick curry gravy packed with tender cuts of beef, chopped Irish potatoes, carrots, and warm spices.",
       "price": 1500,
       "categoryId": "cat-5",
-      "imageUrl": "/src/assets/images/beef_curry_sauce_1783866305014.jpg",
+      "imageUrl": "/assets/images/beef_curry_sauce_1783866305014.jpg",
       "inStock": true,
       "isTodaySpecial": false,
       "nutrition": {
@@ -229,7 +229,7 @@
       "description": "Mildly spiced, creamy, golden coconut curry with soft chicken chunks, delicious as a side or over white rice.",
       "price": 1500,
       "categoryId": "cat-5",
-      "imageUrl": "/src/assets/images/chicken_curry_sauce_1783866932326.jpg",
+      "imageUrl": "/assets/images/chicken_curry_sauce_1783866932326.jpg",
       "inStock": true,
       "isTodaySpecial": false,
       "nutrition": {
@@ -242,35 +242,18 @@
     },
     {
       "id": "menu-12",
-      "name": "Fisherman Soup (Premium)",
-      "description": "Deep delta style light broth packed with sea catfish, local river crab, tiger prawns, periwinkles, and yellow peppers. Divine!",
-      "price": 3500,
-      "categoryId": "cat-6",
-      "imageUrl": "/src/assets/images/fisherman_soup_premium_1783867187146.jpg",
-      "inStock": true,
-      "isTodaySpecial": true,
-      "nutrition": {
-        "calories": 420,
-        "protein": "35g",
-        "carbs": "8g",
-        "fat": "16g"
-      },
-      "createdAt": "2026-07-08T10:00:00.000Z"
-    },
-    {
-      "id": "menu-13",
-      "name": "Spicy Nkwobi Delight",
-      "description": "Tender, slow-cooked cow foot chunks drenched in a rich, spicy palm oil paste, infused with traditional African ugba (oil bean) and utazi leaves.",
-      "price": 3000,
-      "categoryId": "cat-6",
-      "imageUrl": "/src/assets/images/spicy_nkwobi_delight_1783867394469.jpg",
+      "name": "Goat Meat Curry Sauce",
+      "description": "Rich, aromatic and savory goat meat pieces slow-cooked in a spicy traditional curry broth with potatoes and carrots.",
+      "price": 1800,
+      "categoryId": "cat-5",
+      "imageUrl": "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&q=80&w=500",
       "inStock": true,
       "isTodaySpecial": false,
       "nutrition": {
-        "calories": 480,
-        "protein": "32g",
-        "carbs": "6g",
-        "fat": "35g"
+        "calories": 510,
+        "protein": "31g",
+        "carbs": "14g",
+        "fat": "25g"
       },
       "createdAt": "2026-07-08T10:00:00.000Z"
     }
@@ -284,22 +267,22 @@
       "address": "Mbiama-Yenagoa Road, Biogbolo, Yenagoa",
       "deliveryType": "Delivery",
       "status": "Delivered",
-      "subtotal": 3500,
+      "subtotal": 2800,
       "deliveryFee": 800,
-      "discountAmount": 350,
+      "discountAmount": 280,
       "discountCode": "PUNIQUE10",
-      "total": 3950,
+      "total": 3320,
       "items": [
         {
           "id": "oi-1",
           "orderId": "ORD-9841",
-          "menuItemId": "menu-12",
-          "name": "Fisherman Soup (Premium)",
+          "menuItemId": "menu-8",
+          "name": "Bayelsa Native Seafood Okra",
           "quantity": 1,
-          "priceAtTime": 3500
+          "priceAtTime": 2800
         }
       ],
-      "createdAt": "2026-07-02T10:00:00.000Z"
+      "createdAt": "2026-07-07T10:16:32.000Z"
     },
     {
       "id": "ORD-9842",
@@ -321,7 +304,7 @@
           "priceAtTime": 1400
         }
       ],
-      "createdAt": "2026-07-03T10:00:00.000Z"
+      "createdAt": "2026-07-08T10:16:32.000Z"
     },
     {
       "id": "ORD-9843",
@@ -353,7 +336,7 @@
           "priceAtTime": 1400
         }
       ],
-      "createdAt": "2026-07-04T10:00:00.000Z"
+      "createdAt": "2026-07-09T10:16:32.000Z"
     },
     {
       "id": "ORD-9844",
@@ -377,7 +360,7 @@
           "priceAtTime": 2200
         }
       ],
-      "createdAt": "2026-07-04T11:00:00.000Z"
+      "createdAt": "2026-07-10T10:16:32.000Z"
     },
     {
       "id": "ORD-9845",
@@ -401,7 +384,7 @@
           "proteinExtraFee": 1000
         }
       ],
-      "createdAt": "2026-07-05T14:30:00.000Z"
+      "createdAt": "2026-07-11T10:16:32.000Z"
     },
     {
       "id": "ORD-9846",
@@ -426,7 +409,7 @@
           "priceAtTime": 1000
         }
       ],
-      "createdAt": "2026-07-06T12:00:00.000Z"
+      "createdAt": "2026-07-12T10:16:32.000Z"
     },
     {
       "id": "ORD-9847",
@@ -435,10 +418,10 @@
       "address": "Okaka Road, Yenagoa",
       "deliveryType": "Delivery",
       "status": "Preparing",
-      "subtotal": 4100,
+      "subtotal": 4000,
       "deliveryFee": 800,
       "discountAmount": 0,
-      "total": 4900,
+      "total": 4800,
       "items": [
         {
           "id": "oi-8",
@@ -459,7 +442,7 @@
           "priceAtTime": 1500
         }
       ],
-      "createdAt": "2026-07-07T18:15:00.000Z"
+      "createdAt": "2026-07-13T01:16:32.000Z"
     },
     {
       "id": "ORD-9848",
@@ -490,7 +473,7 @@
           "priceAtTime": 1400
         }
       ],
-      "createdAt": "2026-07-07T19:30:00.000Z"
+      "createdAt": "2026-07-13T02:16:32.000Z"
     }
   ],
   "coupons": [
@@ -541,7 +524,7 @@
       "menuItemName": "Bayelsa Native Seafood Okra",
       "rating": 5,
       "comment": "Oh my goodness! The periwinkles and fresh baby crabs are sweet and authentic. Best seafood okra in Yenagoa, bar none!",
-      "createdAt": "2026-07-05T17:50:31.440Z",
+      "createdAt": "2026-07-10T10:16:32.000Z",
       "likes": 12
     },
     {
@@ -552,7 +535,7 @@
       "menuItemName": "Smokey Jollof Rice",
       "rating": 5,
       "comment": "Proper party style! The firewood smoke flavor is perfect. Highly recommended.",
-      "createdAt": "2026-07-06T17:50:31.440Z",
+      "createdAt": "2026-07-11T10:16:32.000Z",
       "likes": 8
     },
     {
@@ -563,7 +546,7 @@
       "menuItemName": "Special Asun Rice",
       "rating": 4,
       "comment": "Extremely tasty and fiery hot, just how I like my Asun. Chunks of goat meat were so tender. Definitely ordering again!",
-      "createdAt": "2026-07-07T17:50:31.440Z",
+      "createdAt": "2026-07-12T10:16:32.000Z",
       "likes": 5
     },
     {
@@ -574,7 +557,7 @@
       "menuItemName": "Creamy Beef Sandwich",
       "rating": 5,
       "comment": "This is my absolute go-to breakfast. So creamy, satisfying, and filling.",
-      "createdAt": "2026-07-08T05:50:31.440Z",
+      "createdAt": "2026-07-13T01:16:32.000Z",
       "likes": 3
     }
   ]

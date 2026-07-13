@@ -371,9 +371,7 @@ export default function OrderHistory({
 
                 {/* Loyalty Point Tracker Club Card */}
                 {(() => {
-                  const totalPoints = orders
-                    .filter((o) => o.status === OrderStatus.DELIVERED)
-                    .reduce((sum, o) => sum + Math.floor(o.subtotal / 100), 0);
+                  const totalPoints = parseInt(localStorage.getItem("punique_loyalty_points") || "0", 10);
                   
                   return (
                     <div className="bg-gradient-to-br from-brand-green via-[#0c2b18] to-emerald-950 text-white rounded-2xl p-5 shadow-lg border border-emerald-500/10 space-y-4 relative overflow-hidden animate-fadeIn">

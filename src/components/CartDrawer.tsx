@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from "react";
-import { X, Trash2, Plus, Minus, ShoppingBag, MapPin, Tag, Phone, User, Mail, Sparkles, Clock } from "lucide-react";
+import { X, Trash2, Plus, Minus, ShoppingBag, MapPin, Tag, Phone, User, Mail, Sparkles, Clock, Award } from "lucide-react";
 import { MenuItem, KitchenSettings, DeliveryType, Coupon } from "../types";
 
 export interface CartItem {
@@ -26,6 +26,7 @@ interface CartDrawerProps {
   onRemoveItem: (id: string) => void;
   settings: KitchenSettings;
   coupons: Coupon[];
+  loyaltyPoints?: number;
   onCheckout: (checkoutData: {
     customerName: string;
     phone: string;
@@ -34,6 +35,8 @@ interface CartDrawerProps {
     deliveryType: DeliveryType;
     couponCode?: string;
     discountAmount: number;
+    pointsRedeemed?: number;
+    loyaltyDiscount?: number;
     subtotal: number;
     deliveryFee: number;
     total: number;
@@ -61,6 +64,7 @@ export default function CartDrawer({
   onRemoveItem,
   settings,
   coupons,
+  loyaltyPoints = 0,
   onCheckout,
 }: CartDrawerProps) {
   const [deliveryType, setDeliveryType] = useState<DeliveryType>(DeliveryType.DELIVERY);
@@ -68,6 +72,10 @@ export default function CartDrawer({
   const [activeCoupon, setActiveCoupon] = useState<Coupon | null>(null);
   const [couponError, setCouponError] = useState<string>("");
   const [couponSuccess, setCouponSuccess] = useState<string>("");
+
+  // Loyalty Points Redemption states
+  const [isLoyaltyApplied, setIsLoyaltyApplied] = useState<boolean>(false);
+  const [redeemedPointsInput, setRedeemedPointsInput] = useState<number>(1000);
 
   // Customer details
   const [customerName, setCustomerName] = useState<string>("");
@@ -111,7 +119,15 @@ export default function CartDrawer({
     ? Math.round((subtotal * activeCoupon.discountPercent) / 100)
     : 0;
 
-  const total = subtotal + deliveryFee - discountAmount;
+  const cashBeforeLoyalty = subtotal + deliveryFee - discountAmount;
+  const maxPointsRedeemable = Math.min(loyaltyPoints, cashBeforeLoyalty);
+
+  const pointsApplied = isLoyaltyApplied && loyaltyPoints >= 1000
+    ? Math.max(0, Math.min(redeemedPointsInput, maxPointsRedeemable))
+    : 0;
+
+  const loyaltyDiscount = pointsApplied; // 1 point = 1 Naira
+  const total = Math.max(0, cashBeforeLoyalty - loyaltyDiscount);
 
   // Verify coupon code
   const handleApplyCoupon = (e: React.FormEvent) => {
@@ -168,6 +184,8 @@ export default function CartDrawer({
       deliveryType,
       couponCode: activeCoupon?.code,
       discountAmount,
+      pointsRedeemed: pointsApplied,
+      loyaltyDiscount: loyaltyDiscount,
       subtotal,
       deliveryFee,
       total,
@@ -390,8 +408,108 @@ export default function CartDrawer({
                 {couponSuccess && <p className="text-[10px] text-green-600 font-semibold mt-1">{couponSuccess}</p>}
               </form>
 
+              {/* Loyalty Points Reward Section */}
+              <div className="bg-gradient-to-br from-slate-50 to-emerald-50/30 rounded-2xl border border-slate-100 p-4 space-y-3.5 mt-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Award className={`h-5 w-5 ${loyaltyPoints >= 1000 ? 'text-brand-gold animate-bounce' : 'text-slate-400'}`} style={{ animationDuration: '3s' }} />
+                    <h4 className="font-serif text-sm font-bold text-brand-green">Punique Club Rewards</h4>
+                  </div>
+                  <span className="font-mono text-xs font-black text-brand-orange bg-brand-orange/5 px-2.5 py-1 rounded-xl">
+                    {loyaltyPoints.toLocaleString()} PTS
+                  </span>
+                </div>
+
+                {loyaltyPoints < 1000 ? (
+                  <div className="text-[11px] text-slate-500 bg-white/70 rounded-xl p-2.5 border border-slate-100 leading-relaxed font-medium">
+                    <span className="text-slate-400 font-bold">🔒 Locked:</span> Once you reach <strong className="text-brand-green">1,000 points</strong>, you can use them to buy delicious food! 1,000 points is equivalent to ₦1,000 Naira discount.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-[11px] text-emerald-800 leading-relaxed font-medium">
+                      🎉 <strong>You qualify!</strong> You have reached the 1,000 points milestone. You can now use your loyalty points to pay for this order (1 pt = ₦1).
+                    </p>
+
+                    <label className="flex items-center space-x-3.5 cursor-pointer bg-white rounded-xl border border-emerald-100 p-3 shadow-xs hover:border-emerald-300 transition select-none">
+                      <input
+                        type="checkbox"
+                        checked={isLoyaltyApplied}
+                        onChange={(e) => {
+                          setIsLoyaltyApplied(e.target.checked);
+                          if (e.target.checked) {
+                            setRedeemedPointsInput(maxPointsRedeemable);
+                          }
+                        }}
+                        className="h-4.5 w-4.5 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer accent-emerald-600"
+                      />
+                      <div className="text-left">
+                        <span className="text-xs font-bold text-slate-700 block">Apply Loyalty Points</span>
+                        <span className="text-[10px] text-slate-400 font-semibold font-mono">1 Point = ₦1 Naira discount</span>
+                      </div>
+                    </label>
+
+                    {isLoyaltyApplied && (
+                      <div className="space-y-2.5 bg-white rounded-xl border border-slate-100 p-3.5 animate-fadeIn">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs font-semibold text-slate-600">Points to redeem:</span>
+                          <span className="font-mono text-sm font-extrabold text-brand-green">{pointsApplied.toLocaleString()} pts</span>
+                        </div>
+
+                        {/* Slider Control */}
+                        <div className="space-y-1">
+                          <input
+                            type="range"
+                            min="1"
+                            max={maxPointsRedeemable}
+                            value={redeemedPointsInput}
+                            onChange={(e) => setRedeemedPointsInput(Number(e.target.value))}
+                            className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-brand-orange"
+                          />
+                          <div className="flex justify-between text-[9px] text-slate-400 font-bold font-mono">
+                            <span>1 pt</span>
+                            <span>Max: {maxPointsRedeemable.toLocaleString()} pts</span>
+                          </div>
+                        </div>
+
+                        {/* Quick Presets Buttons */}
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => setRedeemedPointsInput(Math.min(1000, maxPointsRedeemable))}
+                            className="rounded-lg bg-slate-50 hover:bg-slate-100 text-[10px] font-bold py-1.5 px-2.5 border border-slate-200 text-slate-700 transition cursor-pointer"
+                          >
+                            Redeem 1k Pts
+                          </button>
+                          {maxPointsRedeemable >= 2000 && (
+                            <button
+                              type="button"
+                              onClick={() => setRedeemedPointsInput(Math.min(2000, maxPointsRedeemable))}
+                              className="rounded-lg bg-slate-50 hover:bg-slate-100 text-[10px] font-bold py-1.5 px-2.5 border border-slate-200 text-slate-700 transition cursor-pointer"
+                            >
+                              Redeem 2k Pts
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => setRedeemedPointsInput(maxPointsRedeemable)}
+                            className="rounded-lg bg-emerald-50 hover:bg-emerald-100 text-[10px] font-bold py-1.5 px-2.5 border border-emerald-200 text-emerald-800 transition cursor-pointer"
+                          >
+                            Redeem Max
+                          </button>
+                        </div>
+
+                        <div className="text-[10px] text-emerald-700 bg-emerald-50 rounded-lg p-2 font-bold flex justify-between">
+                          <span>₦{pointsApplied.toLocaleString()} discount applied!</span>
+                          <span className="font-mono text-slate-400">Bal after: {(loyaltyPoints - pointsApplied).toLocaleString()} pts</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               {/* Customer Checkout Details */}
-              <form onSubmit={handleCheckoutSubmit} className="space-y-3.5 pt-4 border-t border-slate-100">
+              <form onSubmit={handleCheckoutSubmit} className="space-y-3.5 pt-4 border-t border-slate-100 mt-4">
                 <h3 className="text-xs font-bold text-brand-green uppercase tracking-wider mb-2">Recipient Details</h3>
                 
                 <div className="space-y-3">
@@ -460,6 +578,12 @@ export default function CartDrawer({
                       <span className="font-serif">-₦{discountAmount.toLocaleString()}</span>
                     </div>
                   )}
+                  {loyaltyDiscount > 0 && (
+                    <div className="flex justify-between text-xs text-emerald-600 font-bold">
+                      <span>Loyalty Reward Discount ({pointsApplied.toLocaleString()} pts)</span>
+                      <span className="font-serif">-₦{loyaltyDiscount.toLocaleString()}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-sm font-bold text-brand-green pt-2 border-t border-slate-100">
                     <span>Grand Total</span>
                     <span className="font-serif text-brand-orange text-lg">₦{total.toLocaleString()}</span>
@@ -473,7 +597,7 @@ export default function CartDrawer({
                   className="w-full rounded-2xl bg-brand-orange hover:bg-brand-orange/95 text-white font-bold py-4 text-xs tracking-wider uppercase mt-4 shadow-lg shadow-brand-orange/20 transition active:scale-95 flex items-center justify-center space-x-2 cursor-pointer"
                 >
                   <Sparkles className="h-4 w-4" />
-                  <span>Secure Online Checkout</span>
+                  <span>{total === 0 ? "Place Loyalty Order 🎁 (Free)" : "Secure Online Checkout"}</span>
                 </button>
 
                 {subtotal > 0 && (

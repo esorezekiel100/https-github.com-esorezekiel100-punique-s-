@@ -68,6 +68,8 @@ export interface Order {
   discountAmount: number;
   discountCode?: string;
   total: number;
+  pointsRedeemed?: number;
+  loyaltyDiscount?: number;
   items: OrderItem[];
   createdAt: string;
 }

@@ -7,6 +7,36 @@ import { useState } from "react";
 import { Search, Sparkles, AlertCircle, ShoppingCart, Plus, Check } from "lucide-react";
 import { Category, MenuItem } from "../types";
 
+function DishImage({ src, alt, className }: { src: string; alt: string; className: string }) {
+  const [hasError, setHasError] = useState(false);
+
+  if (hasError || !src) {
+    return (
+      <div className="h-full w-full bg-slate-50 flex flex-col items-center justify-center p-4 text-center border-b border-slate-100 select-none">
+        <div className="h-10 w-10 rounded-full bg-brand-orange/10 flex items-center justify-center text-brand-orange mb-1.5 animate-pulse">
+          🍳
+        </div>
+        <p className="font-serif text-xs font-bold text-brand-green truncate max-w-full px-2">{alt}</p>
+        <span className="text-[9px] uppercase tracking-wider font-bold text-brand-orange mt-0.5">
+          Image Coming Soon
+        </span>
+      </div>
+    );
+  }
+
+  const cleanSrc = src.startsWith("/src/assets/") ? src.replace("/src/", "/") : src;
+
+  return (
+    <img
+      src={cleanSrc}
+      alt={alt}
+      className={className}
+      onError={() => setHasError(true)}
+      referrerPolicy="no-referrer"
+    />
+  );
+}
+
 interface MenuSectionProps {
   menuItems: MenuItem[];
   categories: Category[];
@@ -86,11 +116,10 @@ export default function MenuSection({
                 </div>
                 
                 <div className="w-full md:w-1/3 aspect-video md:aspect-square rounded-xl overflow-hidden shadow-inner bg-white/10 shrink-0">
-                  <img
+                  <DishImage
                     src={item.imageUrl}
                     alt={item.name}
                     className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                    referrerPolicy="no-referrer"
                   />
                 </div>
                 
@@ -247,11 +276,10 @@ export default function MenuSection({
                     <div className="steam-vapor steam-vapor-3"></div>
                   </div>
                 )}
-                <img
+                <DishImage
                   src={item.imageUrl}
                   alt={item.name}
                   className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                  referrerPolicy="no-referrer"
                 />
               </div>
 
