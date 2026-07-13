@@ -113,3 +113,14 @@ export interface Review {
   likes: number;
 }
 
+export interface AdminNotification {
+  id: string;
+  type: string;
+  message: string;
+  timestamp: string;
+  amount: number;
+  orderId: string;
+  customerName: string;
+  isRead: boolean;
+}
+

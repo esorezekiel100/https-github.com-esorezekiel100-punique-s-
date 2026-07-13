@@ -2,13 +2,15 @@
 
 @theme {
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Fraunces", Georgia, serif;
+  --font-serif: "Playfair Display", Georgia, serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-script: "Sacramento", cursive;
 
-  --color-brand-orange: #FF5A36; /* Vibrant, delicious coral-orange */
-  --color-brand-green: #0E2919;  /* Lush botanical evergreen */
-  --color-brand-cream: #FAF6F0;  /* Soft, warm oatmeal/vanilla cream */
-  --color-brand-gold: #E5A93B;   /* Smooth warm gold */
+  --color-brand-orange: #5B3A24; /* Rich Brand Chocolate Brown */
+  --color-brand-green: #607A4E;  /* Sage / Olive Green from color palette */
+  --color-brand-cream: #F7F4EE;  /* Warm white / Cream background */
+  --color-brand-gold: #D4AF37;   /* Elegant Yellow-Gold */
+  --color-brand-charcoal: #111111; /* Off-black */
 }
 
 /* Custom scrollbar for menu browsing and lists */
@@ -17,14 +19,14 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #FAF6F0;
+  background: #F7F4EE;
 }
 ::-webkit-scrollbar-thumb {
-  background: #FF5A36;
+  background: #5B3A24;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #0E2919;
+  background: #607A4E;
 }
 
 /* Delicious Foody Transitions & Keyframes */
@@ -143,7 +145,7 @@
 .aroma-glow {
   position: absolute;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(229, 169, 59, 0.18) 0%, rgba(255, 90, 54, 0.02) 70%, transparent 100%);
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.18) 0%, rgba(91, 58, 36, 0.02) 70%, transparent 100%);
   animation: aromaPulse 4s infinite ease-in-out;
   pointer-events: none;
 }
@@ -165,7 +167,7 @@
 
 /* Custom subtle pattern for food-app vibe */
 .food-hero-bg {
-  background-image: radial-gradient(#FF5A36 0.6px, transparent 0.6px), radial-gradient(#0E2919 0.6px, #FAF6F0 0.6px);
+  background-image: radial-gradient(#5B3A24 0.6px, transparent 0.6px), radial-gradient(#607A4E 0.6px, #F7F4EE 0.6px);
   background-size: 24px 24px;
   background-position: 0 0, 12px 12px;
   opacity: 0.035;
@@ -178,5 +180,114 @@
 .scrollbar-none {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
+}
+
+/* Custom CSS Animations */
+@keyframes slideIn {
+  from {
+    transform: translateY(1rem) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-slideIn {
+  animation: slideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Premium Order Tracker Animations */
+@keyframes progressShimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes chefHatWiggle {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-6deg);
+  }
+  75% {
+    transform: rotate(6deg);
+  }
+}
+
+@keyframes driveBike {
+  0%, 100% {
+    transform: translateX(0) translateY(0);
+  }
+  25% {
+    transform: translateX(2px) translateY(-0.5px);
+  }
+  50% {
+    transform: translateX(0) translateY(0.5px);
+  }
+  75% {
+    transform: translateX(-1px) translateY(-0.5px);
+  }
+}
+
+@keyframes scaleBeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+.animate-progress-shimmer {
+  background: linear-gradient(90deg, #5B3A24, #D4AF37, #607A4E, #5B3A24);
+  background-size: 300% 300%;
+  animation: progressShimmer 4s ease infinite;
+}
+
+.animate-float {
+  animation: floatGentle 2.5s ease-in-out infinite;
+}
+
+.animate-chef-wiggle {
+  animation: chefHatWiggle 1.8s ease-in-out infinite;
+}
+
+.animate-drive-bike {
+  animation: driveBike 0.6s ease-in-out infinite;
+}
+
+.animate-scale-beat {
+  animation: scaleBeat 1.4s ease-in-out infinite;
 }
 

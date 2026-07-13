@@ -4,8 +4,8 @@
  */
 
 import React, { useState, useEffect, useRef } from "react";
-import { ShoppingBag, Clock, History, Award, Sparkles, Soup, UtensilsCrossed } from "lucide-react";
-import { KitchenSettings } from "../types";
+import { ShoppingBag, Clock, History, Award, Sparkles, ChefHat, UtensilsCrossed, Bell, Trash2, CheckSquare } from "lucide-react";
+import { KitchenSettings, AdminNotification } from "../types";
 
 interface NavbarProps {
   cartCount: number;
@@ -13,6 +13,11 @@ interface NavbarProps {
   settings: KitchenSettings;
   onOpenHistory: () => void;
   loyaltyPoints?: number;
+  adminNotifications: AdminNotification[];
+  onReadAllNotifications: () => void;
+  onClearNotifications: () => void;
+  onSelectOrderId: (orderId: string) => void;
+  isAdmin?: boolean;
 }
 
 const getLoyaltyTier = (points: number) => {
@@ -43,15 +48,27 @@ export default function Navbar({
   settings,
   onOpenHistory,
   loyaltyPoints = 0,
+  adminNotifications = [],
+  onReadAllNotifications,
+  onClearNotifications,
+  onSelectOrderId,
+  isAdmin = false,
 }: NavbarProps) {
   const currentTier = getLoyaltyTier(loyaltyPoints);
   const [showLoyaltyTooltip, setShowLoyaltyTooltip] = useState(false);
+  const [showAdminDropdown, setShowAdminDropdown] = useState(false);
   const loyaltyRef = useRef<HTMLDivElement>(null);
+  const adminRef = useRef<HTMLDivElement>(null);
+
+  const unreadCount = adminNotifications.filter((n) => !n.isRead).length;
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (loyaltyRef.current && !loyaltyRef.current.contains(event.target as Node)) {
         setShowLoyaltyTooltip(false);
+      }
+      if (adminRef.current && !adminRef.current.contains(event.target as Node)) {
+        setShowAdminDropdown(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -67,29 +84,20 @@ export default function Navbar({
         <div className="h-1 w-full bg-gradient-to-r from-brand-orange via-brand-gold to-brand-green" />
 
         <div className="mx-auto flex h-16 sm:h-20 max-w-7xl items-center justify-between px-2 min-[375px]:px-3 sm:px-6">
-          {/* Logo & Brand (Interactive Food Logo) */}
-          <div className="flex cursor-pointer items-center space-x-1 min-[375px]:space-x-2 sm:space-x-3 group/logo">
-            <div className="relative flex h-8 w-8 min-[375px]:h-9 min-[375px]:w-9 sm:h-12 sm:w-12 items-center justify-center rounded-lg min-[375px]:rounded-xl sm:rounded-2xl bg-gradient-to-br from-brand-orange via-brand-orange to-brand-gold text-white shadow-md sm:shadow-lg shadow-brand-orange/20 group-hover/logo:scale-105 group-hover/logo:rotate-3 transition-all duration-300 overflow-hidden shrink-0">
-              <div className="absolute inset-0 bg-black/5 group-hover/logo:bg-transparent transition-colors duration-300" />
-              
-              {/* Steaming rising particles on logo hover */}
-              <div className="absolute inset-x-0 top-1.5 flex justify-center space-x-0.5 opacity-0 group-hover/logo:opacity-100 transition-opacity duration-300">
-                <span className="w-0.5 h-1 bg-white/80 rounded-full animate-pulse" />
-                <span className="w-0.5 h-1.5 bg-white/60 rounded-full animate-pulse delay-75" />
-                <span className="w-0.5 h-0.5 bg-white/80 rounded-full animate-pulse delay-150" />
-              </div>
-
-              <Soup className="h-4 w-4 min-[375px]:h-4.5 min-[375px]:w-4.5 sm:h-6 sm:w-6 text-white transform group-hover/logo:scale-110 transition-transform duration-300" />
+          {/* Logo & Brand (Chef Cap & White/Yellow Logo Capsule) */}
+          <div className="flex cursor-pointer items-center space-x-1.5 min-[375px]:space-x-2 sm:space-x-3 group/logo bg-brand-charcoal hover:bg-brand-charcoal/95 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-xl sm:rounded-2xl border border-brand-gold/10 transition-all duration-300 shadow-md">
+            <div className="relative flex h-7 w-7 min-[375px]:h-8 min-[375px]:w-8 sm:h-10 sm:w-10 items-center justify-center rounded-md sm:rounded-xl bg-brand-gold/10 text-brand-gold group-hover/logo:scale-110 group-hover/logo:rotate-6 transition-all duration-300 shrink-0">
+              <ChefHat className="h-4.5 w-4.5 min-[375px]:h-5 min-[375px]:w-5 sm:h-6 sm:w-6 text-brand-gold transform transition-transform duration-300" />
             </div>
 
             <div className="leading-tight">
-              <h1 id="brand-logo" className="font-serif text-[12px] min-[375px]:text-sm min-[410px]:text-base sm:text-2xl font-black tracking-tight text-brand-green flex items-center">
-                PUNIQUE<span className="text-brand-orange ml-0.5 min-[375px]:ml-1 sm:ml-1.5 relative">
+              <h1 id="brand-logo" className="font-serif text-[11px] min-[375px]:text-xs min-[410px]:text-sm sm:text-xl font-black tracking-tight text-white flex items-center">
+                PUNIQUE<span className="text-brand-gold ml-1 sm:ml-1.5 relative">
                   KITCHEN
-                  <span className="absolute -bottom-0.5 left-0 w-full h-0.5 bg-brand-orange/70 scale-x-0 group-hover/logo:scale-x-100 transition-transform duration-300 origin-left" />
+                  <span className="absolute -bottom-0.5 left-0 w-full h-0.5 bg-brand-gold scale-x-0 group-hover/logo:scale-x-100 transition-transform duration-300 origin-left" />
                 </span>
               </h1>
-              <p className="hidden text-[9px] font-mono tracking-widest text-brand-gold uppercase sm:block font-bold mt-0.5">
+              <p className="hidden text-[8px] font-mono tracking-widest text-brand-gold uppercase sm:block font-bold mt-0.5">
                 Good meal equal happy bellies
               </p>
             </div>
@@ -179,6 +187,102 @@ export default function Navbar({
                 </div>
               </div>
             </div>
+
+            {/* Admin Notifications Hub (Bell Icon) */}
+            {isAdmin && (
+              <div className="relative" ref={adminRef}>
+                <button
+                  id="btn-admin-notifications"
+                  onClick={() => setShowAdminDropdown((prev) => !prev)}
+                  className={`relative flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg min-[375px]:rounded-xl sm:rounded-2xl border transition-all duration-300 cursor-pointer ${
+                    unreadCount > 0
+                      ? "bg-amber-50 border-amber-200 text-brand-orange animate-pulse"
+                      : "bg-slate-50/50 border-slate-100 text-slate-500 hover:text-brand-orange"
+                  }`}
+                  title="Admin Payment Alerts"
+                >
+                  <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-4 w-4 sm:h-4.5 sm:w-4.5 items-center justify-center rounded-full bg-red-500 text-[8px] sm:text-[9px] font-extrabold text-white ring-2 ring-white">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* Admin Dropdown Card */}
+                <div
+                  className={`absolute right-0 top-full mt-2 w-72 sm:w-80 origin-top-right rounded-2xl bg-white p-3 sm:p-4 shadow-xl border border-slate-100 ring-1 ring-black/5 transition-all duration-300 z-50 ${
+                    showAdminDropdown
+                      ? "opacity-100 scale-100 pointer-events-auto"
+                      : "opacity-0 scale-95 pointer-events-none"
+                  }`}
+                >
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <div className="flex items-center space-x-1.5">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                      </span>
+                      <h5 className="font-serif text-xs font-bold text-brand-green">Admin Alerts (Payments)</h5>
+                    </div>
+                    {adminNotifications.length > 0 && (
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={onReadAllNotifications}
+                          className="text-[9px] font-bold text-brand-green hover:underline cursor-pointer flex items-center gap-0.5"
+                          title="Mark all as read"
+                        >
+                          <CheckSquare className="h-3 w-3" />
+                          <span>Read</span>
+                        </button>
+                        <button
+                          onClick={onClearNotifications}
+                          className="text-[9px] font-bold text-red-500 hover:underline cursor-pointer flex items-center gap-0.5"
+                          title="Clear all"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                          <span>Clear</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Notifications List */}
+                  <div className="mt-2 max-h-60 overflow-y-auto divide-y divide-slate-50">
+                    {adminNotifications.length === 0 ? (
+                      <div className="py-8 text-center text-xs text-slate-400 font-medium">
+                        No payment alerts received yet.
+                      </div>
+                    ) : (
+                      adminNotifications.map((notif) => (
+                        <div
+                          key={notif.id}
+                          onClick={() => {
+                            onSelectOrderId(notif.orderId);
+                            setShowAdminDropdown(false);
+                          }}
+                          className={`py-2 px-1.5 rounded-lg text-left text-[11px] cursor-pointer transition hover:bg-slate-50 flex items-start gap-2 ${
+                            !notif.isRead ? "bg-amber-50/40 font-semibold" : "text-slate-600"
+                          }`}
+                        >
+                          <div className="h-5 w-5 rounded-full bg-brand-orange/10 flex items-center justify-center text-brand-orange shrink-0 mt-0.5">
+                            <span className="text-[9px] font-bold">₦</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="leading-snug break-words">
+                              {notif.message}
+                            </p>
+                            <p className="text-[8px] text-slate-400 font-mono mt-0.5">
+                              {notif.timestamp ? new Date(notif.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="flex items-center">
               <button

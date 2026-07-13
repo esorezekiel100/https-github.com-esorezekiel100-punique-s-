@@ -4,7 +4,7 @@
  */
 
 import { useState } from "react";
-import { Search, Sparkles, AlertCircle, ShoppingCart, Plus, Check } from "lucide-react";
+import { Search, AlertCircle, ShoppingCart, Plus, Check } from "lucide-react";
 import { Category, MenuItem } from "../types";
 
 function DishImage({ src, alt, className }: { src: string; alt: string; className: string }) {
@@ -99,7 +99,6 @@ export default function MenuSection({
       {todaySpecials.length > 0 && selectedCategory === "all" && !searchWord && (
         <div className="space-y-4">
           <div className="flex items-center space-x-2">
-            <Sparkles className="h-5 w-5 text-brand-orange animate-pulse" />
             <h2 className="font-serif text-2xl font-bold text-brand-green">
               Today's Specialties
             </h2>
@@ -287,7 +286,7 @@ export default function MenuSection({
               <div className="flex flex-col justify-between flex-1 p-5">
                 <div>
                   <div className="flex items-start justify-between">
-                    <h3 className="font-serif text-lg font-bold tracking-tight text-brand-green group-hover:text-brand-orange transition-colors">
+                    <h3 className="font-serif text-lg font-black tracking-tight text-brand-orange group-hover:text-brand-green transition-colors">
                       {item.name}
                     </h3>
                   </div>
@@ -332,7 +331,7 @@ export default function MenuSection({
                     <button
                       id={`btn-add-${item.id}`}
                       onClick={() => handleOpenCustomize(item)}
-                      className="flex items-center space-x-1 rounded-xl bg-brand-orange hover:bg-brand-orange/95 text-white text-xs font-bold px-3.5 py-2 shadow-sm transition hover:shadow active:scale-95 cursor-pointer"
+                      className="flex items-center space-x-1 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3.5 py-2 shadow-sm transition hover:shadow active:scale-95 cursor-pointer"
                     >
                       <ShoppingCart className="h-3.5 w-3.5" />
                       <span>{item.proteinOptions ? "Customize" : "Order"}</span>
@@ -423,7 +422,7 @@ export default function MenuSection({
               <button
                 id="btn-confirm-customization"
                 onClick={handleAddCustomizedItem}
-                className="w-1/2 rounded-xl bg-brand-orange hover:bg-brand-orange/90 text-xs font-bold text-white py-3 shadow-md shadow-brand-orange/20 transition cursor-pointer"
+                className="w-1/2 rounded-xl bg-red-600 hover:bg-red-700 text-xs font-bold text-white py-3 shadow-md shadow-red-600/20 transition cursor-pointer"
               >
                 Order
               </button>

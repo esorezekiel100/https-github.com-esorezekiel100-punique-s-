@@ -63,7 +63,7 @@
       "categoryId": "cat-1",
       "imageUrl": "/assets/images/golden_fluffy_pancakes_1783867783062.jpg",
       "inStock": true,
-      "isTodaySpecial: false",
+      "isTodaySpecial": false,
       "nutrition": {
         "calories": 480,
         "protein": "8g",

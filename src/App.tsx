@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect } from "react";
-import { Sparkles, UtensilsCrossed, Calendar, Award, Phone, MapPin, Clock, ArrowUp, MessageSquare } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Sparkles, UtensilsCrossed, Calendar, Award, Phone, MapPin, Clock, ArrowUp, MessageSquare, Bell, Leaf, Heart, Crown, ChefHat } from "lucide-react";
 import Navbar from "./components/Navbar";
 import MenuSection from "./components/MenuSection";
 import CartDrawer, { CartItem } from "./components/CartDrawer";
@@ -12,7 +12,7 @@ import PaystackModal from "./components/PaystackModal";
 import OrderTracker from "./components/OrderTracker";
 import OrderHistory from "./components/OrderHistory";
 import Reviews from "./components/Reviews";
-import { MenuItem, Category, Order, Coupon, KitchenSettings, OrderStatus } from "./types";
+import { MenuItem, Category, Order, Coupon, KitchenSettings, OrderStatus, AdminNotification } from "./types";
 import { fallbackCategories, fallbackMenuItems, fallbackCoupons, fallbackSettings } from "./db/fallbackData";
 
 const HERO_DISHES = [
@@ -65,6 +65,79 @@ export default function App() {
 
   // Loyalty Points State
   const [loyaltyPoints, setLoyaltyPoints] = useState<number>(0);
+
+  // Admin Notifications & Live Alerts States
+  const [adminNotifications, setAdminNotifications] = useState<AdminNotification[]>([]);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const prevNotificationsRef = useRef<string[]>([]);
+
+  // Check if we are in admin mode via URL query parameters or hash
+  const isAdmin = typeof window !== "undefined" && (window.location.search.includes("admin=true") || window.location.hash.includes("admin"));
+
+  // Fetch admin notifications from the server
+  const fetchAdminNotifications = async () => {
+    try {
+      const res = await fetch("/api/admin/notifications");
+      if (res.ok) {
+        const data = await res.json();
+        setAdminNotifications(data);
+      }
+    } catch (e) {
+      console.error("Failed to fetch admin notifications", e);
+    }
+  };
+
+  // Mark all notifications as read
+  const handleReadAllNotifications = async () => {
+    try {
+      const res = await fetch("/api/admin/notifications/read-all", { method: "POST" });
+      if (res.ok) {
+        fetchAdminNotifications();
+      }
+    } catch (e) {
+      console.error("Failed to read all admin notifications", e);
+    }
+  };
+
+  // Clear all notifications
+  const handleClearNotifications = async () => {
+    try {
+      const res = await fetch("/api/admin/notifications/clear", { method: "POST" });
+      if (res.ok) {
+        fetchAdminNotifications();
+      }
+    } catch (e) {
+      console.error("Failed to clear admin notifications", e);
+    }
+  };
+
+  // Select an order from a notification click to show its tracker
+  const handleSelectOrderId = async (orderId: string) => {
+    try {
+      const res = await fetch("/api/orders");
+      if (res.ok) {
+        const allOrders = await res.json();
+        const found = allOrders.find((o: any) => o.id === orderId);
+        if (found) {
+          setActiveOrder(found);
+          // Scroll to the active order container if needed
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+      }
+      
+      // Fallback: search local orders history
+      const localOrdersStr = localStorage.getItem("punique_local_orders") || "[]";
+      const localOrders = JSON.parse(localOrdersStr);
+      const localFound = localOrders.find((o: any) => o.id === orderId);
+      if (localFound) {
+        setActiveOrder(localFound);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    } catch (e) {
+      console.error("Failed to select order from notification click", e);
+    }
+  };
 
   const recalculateLoyaltyPoints = () => {
     try {
@@ -184,11 +257,36 @@ export default function App() {
     }
   };
 
+  // Synchronize and detect new notifications for live toast alerts
+  useEffect(() => {
+    if (adminNotifications.length > 0) {
+      const prevIds = prevNotificationsRef.current;
+      const currentIds = adminNotifications.map((n) => n.id);
+
+      // Find notifications in current that were not in prev
+      const newNotifs = adminNotifications.filter((n) => !prevIds.includes(n.id));
+
+      if (prevIds.length > 0 && newNotifs.length > 0) {
+        // We have a new notification! Trigger the live alert toast
+        const latestNew = newNotifs[0];
+        setToastMessage(latestNew.message);
+      }
+
+      prevNotificationsRef.current = currentIds;
+    } else {
+      prevNotificationsRef.current = [];
+    }
+  }, [adminNotifications]);
+
   useEffect(() => {
     loadStoreData();
     recalculateLoyaltyPoints();
-    // Poll order status every 10 seconds for real-time order tracking feel
+    fetchAdminNotifications();
+
+    // Poll order status and admin notifications every 10 seconds
     const interval = setInterval(() => {
+      fetchAdminNotifications();
+
       if (activeOrder && activeOrder.status !== "Delivered") {
         if (activeOrder.id.startsWith("ORD-LOCAL-")) {
           // Auto-advance simulated status for demonstration / static mode
@@ -412,6 +510,8 @@ export default function App() {
       setShowPaystack(false);
       // Put customer on tracking screen
       setActiveOrder(orderCreated);
+      // Immediately fetch new admin notification from server
+      fetchAdminNotifications();
     } catch (err) {
       console.warn("Failed to persist order to database. Simulating local checkout success.", err);
       
@@ -452,11 +552,24 @@ export default function App() {
       setShowPaystack(false);
       // Put customer on tracking screen
       setActiveOrder(simulatedOrder);
+
+      // Create a local simulated admin notification
+      const localNotif: AdminNotification = {
+        id: `notif-local-${Date.now()}`,
+        type: "payment",
+        message: `Payment of ₦${Number(simulatedOrder.total).toLocaleString()} successfully received from ${simulatedOrder.customerName} for Order #${simulatedOrder.id}`,
+        timestamp: new Date().toISOString(),
+        amount: Number(simulatedOrder.total),
+        orderId: simulatedOrder.id,
+        customerName: simulatedOrder.customerName,
+        isRead: false
+      };
+      setAdminNotifications((prev) => [localNotif, ...prev]);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-between font-sans selection:bg-brand-orange selection:text-white">
+    <div className="min-h-screen bg-brand-cream/60 flex flex-col justify-between font-sans selection:bg-brand-orange selection:text-white">
       
       {/* 1. Header Navigation */}
       <Navbar
@@ -465,6 +578,11 @@ export default function App() {
         settings={settings}
         onOpenHistory={() => setIsHistoryOpen(true)}
         loyaltyPoints={loyaltyPoints}
+        adminNotifications={adminNotifications}
+        onReadAllNotifications={handleReadAllNotifications}
+        onClearNotifications={handleClearNotifications}
+        onSelectOrderId={handleSelectOrderId}
+        isAdmin={isAdmin}
       />
 
       {/* 2. Main Area Routing */}
@@ -486,33 +604,41 @@ export default function App() {
           /* CUSTOMER STOREFRONT */
           <div>
             
-            {/* HERO SECTION WITH AFRICAN INSPIRED AESTHETIC */}
-            <section className="relative overflow-hidden bg-brand-green text-white py-12 sm:py-20 px-4">
-              {/* Decorative Geometric Accents */}
-              <div className="absolute inset-0 bg-[radial-gradient(#E21B5A_1.2px,transparent_1.2px)] [background-size:18px_18px] opacity-10 pointer-events-none" />
+            {/* HERO SECTION WITH LUXURIOUS CHARCOAL & GOLD AESTHETIC */}
+            <section className="relative overflow-hidden bg-brand-charcoal text-[#F7F4EE] py-12 sm:py-20 px-4">
+              {/* Decorative Gold Geometric Accents */}
+              <div className="absolute inset-0 bg-[radial-gradient(#D4AF37_1.2px,transparent_1.2px)] [background-size:24px_24px] opacity-10 pointer-events-none" />
               
               <div className="mx-auto max-w-7xl flex flex-col lg:flex-row items-center gap-10 sm:gap-12 relative z-10 px-4 sm:px-6">
                 {/* Brand Messaging */}
                 <div className="flex-1 space-y-6 text-center lg:text-left">
-                  <div className="inline-flex items-center space-x-2 bg-white/10 rounded-full px-4.5 py-1.5 border border-white/15">
-                    <Sparkles className="h-4 w-4 text-brand-orange animate-pulse" />
-                    <span className="text-[10px] font-bold tracking-widest text-brand-gold uppercase font-mono">
-                      Delta Premium Culinary Experience
+                  <div className="inline-flex items-center space-x-2 bg-brand-gold/15 rounded-full px-4 py-1.5 border border-brand-gold/25 max-w-full">
+                    <span className="text-[8px] min-[360px]:text-[10px] font-bold tracking-widest text-brand-gold uppercase font-mono text-center">
+                      Homemade & Class • Fresh Meals, Premium Taste
                     </span>
                   </div>
 
-                  <h2 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight text-[#FFF9F0]">
-                    PUNIQUE <span className="text-brand-orange">KITCHEN</span>
+                  <h2 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold leading-none tracking-tight text-[#F7F4EE]">
+                    PUNIQUE <span className="text-brand-gold animate-pulse">KITCHEN</span>
                   </h2>
 
-                  <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-light max-w-xl mx-auto lg:mx-0">
-                    It's not just about food – it's about the joy, comfort, and satisfaction that comes with every delicious bite. When people eat well, they feel good, and that happiness spreads to families, friends, and communities. PUNIQUE KITCHEN exists to make that happen – one warm, tasty meal at a time, delivered right to your doorstep in Yenagoa.
+                  <div className="space-y-3">
+                    <p className="font-script text-3xl min-[360px]:text-4xl sm:text-6xl text-brand-gold leading-none tracking-wide drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                      Made like home, tastes like luxury
+                    </p>
+                    <p className="text-[9px] min-[360px]:text-xs sm:text-sm uppercase tracking-[0.12em] min-[360px]:tracking-[0.18em] sm:tracking-[0.25em] font-bold text-[#F7F4EE]/90 leading-relaxed">
+                      Homemade & Class • Cooked with Love & Delivered with Class
+                    </p>
+                  </div>
+
+                  <p className="text-sm sm:text-base text-slate-100 leading-relaxed font-normal max-w-xl mx-auto lg:mx-0 drop-shadow-sm">
+                    It's not just about food – it's about the joy, comfort, and satisfaction that comes with every delicious bite. Prepared with genuine firewood smoke, seasoned with love, and delivered with class. When people eat well, they feel good, and that happiness spreads to families, friends, and communities.
                   </p>
 
                   <div className="pt-2 flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
                     <a
                       href="#menu-search-input"
-                      className="rounded-2xl bg-brand-orange hover:bg-brand-orange/95 text-white font-bold py-4 px-8 text-xs uppercase tracking-wider transition shadow-lg shadow-brand-orange/20 hover:shadow-brand-orange/30 active:scale-95 text-center"
+                      className="rounded-2xl bg-brand-gold hover:bg-brand-gold/90 text-brand-charcoal font-bold py-4 px-8 text-xs uppercase tracking-wider transition shadow-lg shadow-brand-gold/20 active:scale-95 text-center"
                     >
                       Browse Our Menu
                     </a>
@@ -522,8 +648,8 @@ export default function App() {
                       rel="noopener noreferrer"
                       className="flex items-center justify-center space-x-2.5 text-xs text-slate-300 hover:text-white font-semibold py-3 sm:py-0 transition"
                     >
-                      <Phone className="h-4 w-4 text-brand-orange" />
-                      <span>WhatsApp support: <span className="text-brand-orange font-bold font-mono hover:underline">{settings.kitchenPhone}</span></span>
+                      <Phone className="h-4 w-4 text-brand-gold" />
+                      <span>WhatsApp support: <span className="text-brand-gold font-bold font-mono hover:underline">{settings.kitchenPhone}</span></span>
                     </a>
                   </div>
                 </div>
@@ -577,12 +703,12 @@ export default function App() {
                   </div>
 
                   {/* Quick Toggle Food Tabs */}
-                  <div className="grid grid-cols-3 gap-2.5">
+                  <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
                     {HERO_DISHES.map((dish, idx) => (
                       <button
                         key={idx}
                         onClick={() => setActiveHeroIndex(idx)}
-                        className={`flex flex-col items-center p-2 rounded-2xl border transition text-left cursor-pointer ${
+                        className={`flex flex-col items-center p-1.5 sm:p-2 rounded-xl sm:rounded-2xl border transition text-left cursor-pointer ${
                           activeHeroIndex === idx
                             ? "bg-white/15 border-brand-orange text-white"
                             : "bg-white/5 border-white/10 text-slate-400 hover:bg-white/10"
@@ -609,44 +735,104 @@ export default function App() {
               </div>
             </section>
 
-            {/* VALUE PROPOSITION GRID */}
-            <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-              <div className="grid gap-6 sm:grid-cols-3">
-                <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm flex items-start space-x-4">
-                  <div className="h-10 w-10 bg-rose-50 rounded-xl text-brand-orange flex items-center justify-center shrink-0">
-                    <UtensilsCrossed className="h-5 w-5" />
+            {/* BRAND PROMISE & CHERISHED VALUES (FROM THE OFFICIAL BRAND BOARD) */}
+            <section className="mx-auto max-w-7xl px-4 py-12 sm:py-16 sm:px-6 relative">
+              <div className="absolute inset-0 bg-brand-cream/40 rounded-3xl sm:rounded-[2.5rem] -z-10" />
+              
+              <div className="grid gap-10 lg:grid-cols-12 items-center">
+                
+                {/* Left Pane: Official Brand Promise Card (Premium Charcoal & Gold) */}
+                <div className="lg:col-span-5 bg-brand-charcoal text-[#F7F4EE] rounded-3xl sm:rounded-[2.5rem] p-6 sm:p-10 shadow-2xl relative overflow-hidden border border-brand-gold/30 flex flex-col items-center text-center">
+                  <div className="absolute -top-10 -right-10 w-40 h-40 bg-brand-gold/5 rounded-full blur-3xl pointer-events-none" />
+                  <div className="absolute -bottom-10 -left-10 w-45 h-45 bg-brand-green/10 rounded-full blur-3xl pointer-events-none" />
+                  
+                  <span className="text-[10px] font-bold tracking-[0.25em] text-brand-gold uppercase font-mono bg-brand-gold/10 px-4.5 py-2 rounded-full border border-brand-gold/20">
+                    OUR BRAND PROMISE
+                  </span>
+                  
+                  {/* Gold Heart Ornament from Brand Board */}
+                  <div className="my-6 text-brand-gold animate-pulse">
+                    <Heart className="h-12 w-12 fill-brand-gold stroke-[1.5px]" />
                   </div>
-                  <div>
-                    <h4 className="font-serif text-sm font-bold text-brand-green">Traditional Pride</h4>
-                    <p className="text-xs text-gray-500 mt-1 leading-normal">
-                      Every soup, sauce, and rice dish is cooked using age-old delta recipes and fresh native ingredients.
-                    </p>
+                  
+                  <blockquote className="font-serif text-xl sm:text-2xl font-bold leading-relaxed text-[#F7F4EE] italic">
+                    "Homemade meals made with <span className="text-brand-gold">fresh ingredients</span>, cooked with <span className="text-brand-gold font-script text-3xl sm:text-4xl not-italic">love</span> and delivered with <span className="text-brand-gold">class</span>."
+                  </blockquote>
+                  
+                  <div className="mt-8 flex items-center space-x-2">
+                    <span className="h-px w-8 bg-brand-gold/30"></span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-brand-gold/80 font-mono">Punique Kitchen</span>
+                    <span className="h-px w-8 bg-brand-gold/30"></span>
                   </div>
                 </div>
 
-                <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm flex items-start space-x-4">
-                  <div className="h-10 w-10 bg-rose-50 rounded-xl text-brand-orange flex items-center justify-center shrink-0">
-                    <Calendar className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h4 className="font-serif text-sm font-bold text-brand-green">Rapid Dispatch</h4>
-                    <p className="text-xs text-gray-500 mt-1 leading-normal">
-                      Equipped with designated dispatch riders to deliver piping-hot meals across Yenagoa in minutes.
+                {/* Right Pane: The 4 Core Brand Pillars */}
+                <div className="lg:col-span-7 space-y-6">
+                  <div className="space-y-2 text-center lg:text-left">
+                    <span className="text-xs font-bold text-brand-orange uppercase tracking-widest">Our Core Pillars</span>
+                    <h3 className="font-serif text-2xl sm:text-4xl font-black text-brand-charcoal">
+                      The Homemade &amp; Class Philosophy
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
+                      Every order we prepare embodies these four core pillars to bring the absolute finest homemade experience to your table.
                     </p>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {/* Pillar 1 */}
+                    <div className="bg-white rounded-2xl border border-slate-100 p-4 min-[375px]:p-5 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col min-[375px]:flex-row items-center min-[375px]:items-start space-y-3 min-[375px]:space-y-0 space-x-0 min-[375px]:space-x-4 text-center min-[375px]:text-left group">
+                      <div className="h-12 w-12 bg-emerald-50 rounded-xl text-emerald-700 flex items-center justify-center shrink-0 group-hover:bg-emerald-100 transition-colors duration-300">
+                        <Leaf className="h-6 w-6 stroke-[1.5px]" />
+                      </div>
+                      <div>
+                        <h4 className="font-serif text-sm font-bold text-brand-charcoal">Fresh Ingredients</h4>
+                        <p className="text-xs text-slate-500 mt-1 leading-normal">
+                          Hand-selected farm produce and native delta spices, guaranteeing pure, wholesome goodness in every recipe.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Pillar 2 */}
+                    <div className="bg-white rounded-2xl border border-slate-100 p-4 min-[375px]:p-5 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col min-[375px]:flex-row items-center min-[375px]:items-start space-y-3 min-[375px]:space-y-0 space-x-0 min-[375px]:space-x-4 text-center min-[375px]:text-left group">
+                      <div className="h-12 w-12 bg-amber-50 rounded-xl text-brand-gold flex items-center justify-center shrink-0 group-hover:bg-amber-100 transition-colors duration-300">
+                        <Sparkles className="h-6 w-6 stroke-[1.5px]" />
+                      </div>
+                      <div>
+                        <h4 className="font-serif text-sm font-bold text-brand-charcoal">Premium Taste</h4>
+                        <p className="text-xs text-slate-500 mt-1 leading-normal">
+                          Delivering high-quality gourmet luxury with traditional firewood smokiness and authentic culinary heritage.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Pillar 3 */}
+                    <div className="bg-white rounded-2xl border border-slate-100 p-4 min-[375px]:p-5 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col min-[375px]:flex-row items-center min-[375px]:items-start space-y-3 min-[375px]:space-y-0 space-x-0 min-[375px]:space-x-4 text-center min-[375px]:text-left group">
+                      <div className="h-12 w-12 bg-rose-50 rounded-xl text-rose-600 flex items-center justify-center shrink-0 group-hover:bg-rose-100 transition-colors duration-300">
+                        <Heart className="h-6 w-6 stroke-[1.5px] fill-rose-100 group-hover:fill-rose-200" />
+                      </div>
+                      <div>
+                        <h4 className="font-serif text-sm font-bold text-brand-charcoal">Made With Love</h4>
+                        <p className="text-xs text-slate-500 mt-1 leading-normal">
+                          Prepared with pure care, passion, and warmth, just like food cooked for family and loved ones.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Pillar 4 */}
+                    <div className="bg-white rounded-2xl border border-slate-100 p-4 min-[375px]:p-5 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col min-[375px]:flex-row items-center min-[375px]:items-start space-y-3 min-[375px]:space-y-0 space-x-0 min-[375px]:space-x-4 text-center min-[375px]:text-left group">
+                      <div className="h-12 w-12 bg-indigo-50 rounded-xl text-indigo-700 flex items-center justify-center shrink-0 group-hover:bg-indigo-100 transition-colors duration-300">
+                        <Crown className="h-6 w-6 stroke-[1.5px]" />
+                      </div>
+                      <div>
+                        <h4 className="font-serif text-sm font-bold text-brand-charcoal">Served With Class</h4>
+                        <p className="text-xs text-slate-500 mt-1 leading-normal">
+                          Elegantly packaged and transported by prompt dispatch riders to ensure your meal arrives warm and pristine.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm flex items-start space-x-4">
-                  <div className="h-10 w-10 bg-rose-50 rounded-xl text-brand-orange flex items-center justify-center shrink-0">
-                    <Award className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h4 className="font-serif text-sm font-bold text-brand-green">Clean & Certified</h4>
-                    <p className="text-xs text-gray-500 mt-1 leading-normal">
-                      Maintained with immaculate sanitary kitchen standards to ensure premium health and quality in every box.
-                    </p>
-                  </div>
-                </div>
               </div>
             </section>
 
@@ -708,16 +894,17 @@ export default function App() {
             
             {/* Column 1: Our Kitchen Story & Vibe */}
             <div className="space-y-4 text-center md:text-left">
-              <div className="flex items-center justify-center md:justify-start space-x-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-orange text-white shadow-lg shadow-brand-orange/20">
-                  <span className="font-serif text-xl font-bold">P</span>
+              <div className="flex items-center justify-center md:justify-start space-x-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-charcoal text-brand-gold border border-brand-gold/20 shadow-md">
+                  <ChefHat className="h-5.5 w-5.5 text-brand-gold" />
                 </div>
-                <span className="font-serif text-brand-green text-lg font-bold">
-                  PUNIQUE <span className="text-brand-orange">KITCHEN</span>
+                <span className="font-serif text-base sm:text-lg font-black tracking-tight bg-brand-charcoal px-3 py-1.5 rounded-xl flex items-center shadow-inner">
+                  <span className="text-white">PUNIQUE</span>
+                  <span className="text-brand-gold ml-1.5">KITCHEN</span>
                 </span>
               </div>
               
-              <p className="font-serif text-sm italic text-brand-orange font-medium">
+              <p className="font-serif text-base italic text-brand-orange font-bold drop-shadow-xs">
                 "Good meal equal happy bellies"
               </p>
               
@@ -856,6 +1043,25 @@ export default function App() {
               </span>
             </div>
           </a>
+        </div>
+      )}
+
+      {/* Real-Time Admin Payment Alert Toast */}
+      {isAdmin && toastMessage && (
+        <div className="fixed top-24 right-4 sm:right-6 z-[60] max-w-sm w-[calc(100vw-2rem)] bg-slate-900 text-[#FFF9F0] border-2 border-brand-orange rounded-2xl p-4 shadow-2xl shadow-brand-orange/20 flex gap-3 animate-slideIn">
+          <div className="h-9 w-9 rounded-xl bg-brand-orange/25 border border-brand-orange/30 text-brand-orange flex items-center justify-center shrink-0">
+            <Bell className="h-5 w-5 animate-bounce" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h4 className="text-xs font-bold text-brand-orange uppercase tracking-wider font-mono">Admin Notification</h4>
+            <p className="text-xs text-slate-200 leading-relaxed font-serif mt-1">{toastMessage}</p>
+          </div>
+          <button
+            onClick={() => setToastMessage(null)}
+            className="text-slate-400 hover:text-white text-xs font-bold self-start h-6 w-6 rounded-full hover:bg-white/10 flex items-center justify-center cursor-pointer"
+          >
+            ✕
+          </button>
         </div>
       )}
 

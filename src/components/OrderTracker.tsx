@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { Check, Clock, Flame, MapPin, MessageSquare, Phone, ShoppingBag, Sparkles, Truck } from "lucide-react";
+import { Check, Clock, Flame, MapPin, MessageSquare, Phone, ShoppingBag, Sparkles, Truck, ChefHat, ClipboardCheck, Bike, CheckCircle2 } from "lucide-react";
 import { Order, OrderStatus, DeliveryType } from "../types";
 
 interface OrderTrackerProps {
@@ -63,15 +63,34 @@ export default function OrderTracker({
   };
 
   const steps = [
-    { label: "Received", status: OrderStatus.RECEIVED, description: "We have received your order", icon: Clock },
-    { label: "Preparing", status: OrderStatus.PREPARING, description: "Chef is prepping your fresh meal", icon: Flame },
+    {
+      label: "Received",
+      status: OrderStatus.RECEIVED,
+      description: "We have received your order",
+      icon: ClipboardCheck,
+      activeClass: "animate-scale-beat text-brand-gold",
+    },
+    {
+      label: "Preparing",
+      status: OrderStatus.PREPARING,
+      description: "Chef is prepping your fresh meal",
+      icon: ChefHat,
+      activeClass: "animate-chef-wiggle text-brand-gold",
+    },
     {
       label: order.deliveryType === DeliveryType.DELIVERY ? "Out for Delivery" : "Ready for Pickup",
       status: order.deliveryType === DeliveryType.DELIVERY ? OrderStatus.OUT_FOR_DELIVERY : OrderStatus.READY,
       description: order.deliveryType === DeliveryType.DELIVERY ? "Dispatch rider is on the way" : "Your meal is hot and ready!",
-      icon: order.deliveryType === DeliveryType.DELIVERY ? Truck : ShoppingBag,
+      icon: order.deliveryType === DeliveryType.DELIVERY ? Bike : ShoppingBag,
+      activeClass: order.deliveryType === DeliveryType.DELIVERY ? "animate-drive-bike text-brand-gold" : "animate-float text-brand-gold",
     },
-    { label: "Delivered", status: OrderStatus.DELIVERED, description: "Enjoy your delicious meal!", icon: Check },
+    {
+      label: "Delivered",
+      status: OrderStatus.DELIVERED,
+      description: "Enjoy your delicious meal!",
+      icon: CheckCircle2,
+      activeClass: "animate-scale-beat text-brand-gold",
+    },
   ];
 
   // Determine current step index
@@ -133,17 +152,17 @@ export default function OrderTracker({
         <div className="p-6 sm:p-8 bg-slate-50/60 border-b border-slate-100">
           <div className="relative flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 sm:gap-0">
             {/* Horizontal connection line for desktop */}
-            <div className="absolute top-5 left-6 right-6 h-1 bg-slate-200 hidden sm:block pointer-events-none">
+            <div className="absolute top-[21px] left-6 right-6 h-1.5 bg-slate-200 hidden sm:block rounded-full pointer-events-none overflow-hidden">
               <div
-                className="h-full bg-brand-orange transition-all duration-500"
+                className="h-full rounded-full animate-progress-shimmer transition-all duration-700 ease-out shadow-[0_0_8px_rgba(212,175,55,0.4)]"
                 style={{ width: `${(currentStepIndex / 3) * 100}%` }}
               />
             </div>
 
             {/* Vertical connection line for mobile */}
-            <div className="absolute left-[21px] top-5 bottom-5 w-1 bg-slate-200 sm:hidden pointer-events-none">
+            <div className="absolute left-[21px] top-[21px] bottom-[21px] w-1.5 bg-slate-200 sm:hidden rounded-full pointer-events-none overflow-hidden">
               <div
-                className="w-full bg-brand-orange transition-all duration-500"
+                className="w-full rounded-full animate-progress-shimmer transition-all duration-700 ease-out shadow-[0_0_8px_rgba(212,175,55,0.4)]"
                 style={{ height: `${(currentStepIndex / 3) * 100}%` }}
               />
             </div>
@@ -156,16 +175,23 @@ export default function OrderTracker({
               
               return (
                 <div key={step.label} className="flex sm:flex-col items-center gap-4 sm:gap-2 z-10 w-full sm:w-1/4 text-left sm:text-center">
-                  <div
-                    className={`flex h-11 w-11 items-center justify-center rounded-full border-2 transition duration-500 ${
-                      isCompleted
-                        ? "bg-brand-orange border-brand-orange text-white shadow-md shadow-rose-500/20"
-                        : isActive
-                        ? "bg-brand-orange border-brand-orange text-white shadow-md shadow-rose-500/25 animate-pulse"
-                        : "bg-white border-slate-200 text-gray-300"
-                    }`}
-                  >
-                    {isCompleted ? <Check className="h-5 w-5 stroke-[3px]" /> : <Icon className="h-5 w-5" />}
+                  <div className="relative shrink-0">
+                    <div
+                      className={`flex h-11 w-11 items-center justify-center rounded-full border-2 transition-all duration-500 ${
+                        isCompleted
+                          ? "bg-brand-green border-brand-green text-white shadow-md shadow-brand-green/20"
+                          : isActive
+                          ? "bg-brand-orange border-brand-orange text-white shadow-md shadow-brand-orange/30 ring-4 ring-brand-orange/15"
+                          : "bg-white border-slate-200 text-slate-300"
+                      }`}
+                    >
+                      <Icon className={`h-5 w-5 ${isActive ? step.activeClass : ""}`} />
+                    </div>
+                    {isCompleted && (
+                      <span className="absolute -bottom-1 -right-1 bg-brand-gold text-brand-charcoal rounded-full p-0.5 border border-white shadow-sm flex items-center justify-center z-20">
+                        <Check className="h-2.5 w-2.5 stroke-[3.5px]" />
+                      </span>
+                    )}
                   </div>
 
                   <div>
@@ -205,7 +231,7 @@ export default function OrderTracker({
               {order.items.map((item) => (
                 <div key={item.id} className="py-2.5 flex justify-between items-center text-xs">
                   <div>
-                    <span className="font-bold text-brand-green">{item.name}</span>
+                    <span className="font-extrabold text-brand-orange">{item.name}</span>
                     <span className="text-gray-400 font-medium ml-1.5">x{item.quantity}</span>
                     {item.selectedProtein && (
                       <span className="block text-[10px] text-brand-orange font-medium mt-0.5">
@@ -274,20 +300,39 @@ export default function OrderTracker({
 
           {/* Loyalty Points Earned / Celebration section */}
           {order.status === OrderStatus.DELIVERED && (
-            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 rounded-2xl p-5 text-center relative overflow-hidden animate-fadeIn">
-              <div className="absolute top-0 right-0 h-16 w-16 bg-brand-gold/10 rounded-bl-full pointer-events-none" />
-              <Sparkles className="h-7 w-7 text-brand-gold mx-auto animate-bounce shrink-0" />
-              <h3 className="font-serif text-base font-bold text-brand-green mt-1">Loyalty Points Claimed! 🎉</h3>
-              <p className="text-xs text-slate-600 max-w-sm mx-auto leading-relaxed mt-1 font-medium">
-                Success! This completed order has earned you <span className="font-bold text-brand-orange text-sm">{Math.floor(order.subtotal / 100)}</span> Loyalty Points!
-              </p>
-              {totalPoints !== null && (
-                <div className="inline-flex items-center space-x-1.5 bg-white border border-emerald-100 rounded-full px-3.5 py-1.5 text-xs font-bold text-brand-green shadow-sm mt-3">
-                  <Sparkles className="h-3.5 w-3.5 text-brand-gold animate-pulse shrink-0" />
-                  <span>Your Lifetime Balance:</span>
-                  <span className="text-brand-orange">{totalPoints} points</span>
+            <div className="space-y-4">
+              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 rounded-2xl p-5 text-center relative overflow-hidden animate-fadeIn">
+                <div className="absolute top-0 right-0 h-16 w-16 bg-brand-gold/10 rounded-bl-full pointer-events-none" />
+                <Sparkles className="h-7 w-7 text-brand-gold mx-auto animate-bounce shrink-0" />
+                <h3 className="font-serif text-base font-bold text-brand-green mt-1">Loyalty Points Claimed! 🎉</h3>
+                <p className="text-xs text-slate-600 max-w-sm mx-auto leading-relaxed mt-1 font-medium">
+                  Success! This completed order has earned you <span className="font-bold text-brand-orange text-sm">{Math.floor(order.subtotal / 100)}</span> Loyalty Points!
+                </p>
+                {totalPoints !== null && (
+                  <div className="inline-flex items-center space-x-1.5 bg-white border border-emerald-100 rounded-full px-3.5 py-1.5 text-xs font-bold text-brand-green shadow-sm mt-3">
+                    <Sparkles className="h-3.5 w-3.5 text-brand-gold animate-pulse shrink-0" />
+                    <span>Your Lifetime Balance:</span>
+                    <span className="text-brand-orange">{totalPoints} points</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Elegant Note to Customer on Successful Delivery */}
+              <div className="bg-amber-50/80 border border-amber-200/60 rounded-2xl p-5 relative overflow-hidden shadow-sm animate-fadeIn">
+                <div className="absolute -top-6 -right-6 h-16 w-16 bg-brand-orange/10 rounded-full pointer-events-none" />
+                <h4 className="font-serif text-sm font-bold text-amber-950 flex items-center justify-center gap-1.5">
+                  <span role="img" aria-label="chef icon">🍳</span>
+                  <span>Punique Kitchen Delivery Note</span>
+                </h4>
+                <p className="font-serif text-xs text-amber-900 leading-relaxed italic text-center mt-2.5 px-1 max-w-md mx-auto">
+                  "Dear {order.customerName}, your delicious food has been prepared with genuine firewood smoke, seasoned with love, and safely delivered hot! We hope this meal brings a warm smile to your face and absolute comfort to your belly. Good meal equal happy bellies!"
+                </p>
+                <div className="mt-4 flex items-center justify-center gap-2 text-[10px] font-bold text-amber-800 uppercase font-mono tracking-wider">
+                  <span>Chef & Dispatch Crew</span>
+                  <span className="h-1 w-1 rounded-full bg-brand-orange" />
+                  <span>Punique Kitchen</span>
                 </div>
-              )}
+              </div>
             </div>
           )}
 

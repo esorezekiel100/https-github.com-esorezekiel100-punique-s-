@@ -8,7 +8,7 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import { readDb, writeDb } from "./src/db/localDb";
-import { Order, MenuItem, OrderStatus, DeliveryType, KitchenSettings } from "./src/types";
+import { Order, MenuItem, OrderStatus, DeliveryType, KitchenSettings, AdminNotification } from "./src/types";
 
 const app = express();
 const PORT = 3000;
@@ -189,6 +189,20 @@ app.post("/api/orders", (req, res) => {
       }
     }
 
+    // Create a new admin notification for payment received
+    const newNotif: AdminNotification = {
+      id: `notif-${Date.now()}`,
+      type: "payment",
+      message: `Payment of ₦${Number(total).toLocaleString()} successfully received from ${customerName} for Order #${newOrder.id}`,
+      timestamp: new Date().toISOString(),
+      amount: Number(total),
+      orderId: newOrder.id,
+      customerName,
+      isRead: false
+    };
+    db.adminNotifications = db.adminNotifications || [];
+    db.adminNotifications.unshift(newNotif);
+
     writeDb(db);
     res.status(201).json(newOrder);
   } catch (error: any) {
@@ -215,6 +229,40 @@ app.put("/api/orders/:id/status", (req, res) => {
     db.orders[index].status = status as OrderStatus;
     writeDb(db);
     res.json(db.orders[index]);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 7b. Get Admin Notifications
+app.get("/api/admin/notifications", (req, res) => {
+  try {
+    const db = readDb();
+    res.json(db.adminNotifications || []);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 7c. Mark All Admin Notifications as Read
+app.post("/api/admin/notifications/read-all", (req, res) => {
+  try {
+    const db = readDb();
+    db.adminNotifications = (db.adminNotifications || []).map((n) => ({ ...n, isRead: true }));
+    writeDb(db);
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 7d. Clear All Admin Notifications
+app.post("/api/admin/notifications/clear", (req, res) => {
+  try {
+    const db = readDb();
+    db.adminNotifications = [];
+    writeDb(db);
+    res.json({ success: true });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

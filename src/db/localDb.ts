@@ -5,7 +5,7 @@
 
 import fs from "fs";
 import path from "path";
-import { Category, MenuItem, Order, Coupon, KitchenSettings, OrderStatus, DeliveryType, Review } from "../types";
+import { Category, MenuItem, Order, Coupon, KitchenSettings, OrderStatus, DeliveryType, Review, AdminNotification } from "../types";
 
 const DB_DIR = path.join(process.cwd(), "src", "db");
 const DB_FILE = path.join(DB_DIR, "db.json");
@@ -17,6 +17,7 @@ interface DbSchema {
   coupons: Coupon[];
   settings: KitchenSettings;
   reviews: Review[];
+  adminNotifications?: AdminNotification[];
 }
 
 // Initial seed data
@@ -405,7 +406,8 @@ export function initDb() {
       orders: getInitialOrders(),
       coupons: initialCoupons,
       settings: initialSettings,
-      reviews: initialReviews
+      reviews: initialReviews,
+      adminNotifications: []
     };
     fs.writeFileSync(DB_FILE, JSON.stringify(defaultData, null, 2), "utf8");
   }
@@ -427,6 +429,16 @@ export function readDb(): DbSchema {
         console.error("Failed to write back migrated reviews", writeErr);
       }
     }
+
+    // Auto-migrate if adminNotifications key does not exist yet
+    if (!data.adminNotifications) {
+      data.adminNotifications = [];
+      try {
+        fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), "utf8");
+      } catch (writeErr) {
+        console.error("Failed to write back migrated adminNotifications", writeErr);
+      }
+    }
     
     return data;
   } catch (error) {
@@ -437,7 +449,8 @@ export function readDb(): DbSchema {
       orders: getInitialOrders(),
       coupons: initialCoupons,
       settings: initialSettings,
-      reviews: initialReviews
+      reviews: initialReviews,
+      adminNotifications: []
     };
   }
 }

@@ -249,13 +249,13 @@ export default function CartDrawer({
                           referrerPolicy="no-referrer"
                         />
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-serif text-sm font-bold text-brand-green truncate">{item.name}</h4>
+                          <h4 className="font-serif text-sm font-black text-brand-orange truncate">{item.name}</h4>
                           {item.selectedProtein && (
                             <span className="inline-block mt-0.5 rounded-full bg-brand-orange/10 border border-brand-orange/20 text-brand-orange px-2 py-0.5 text-[10px] font-medium font-mono">
                               {item.selectedProtein.split(" (")[0]}
                             </span>
                           )}
-                          <p className="text-xs font-serif font-bold text-brand-green/80 mt-1">
+                          <p className="text-xs font-serif font-extrabold text-brand-orange mt-1">
                             ₦{itemUnitTotal.toLocaleString()}
                           </p>
                         </div>
@@ -594,7 +594,7 @@ export default function CartDrawer({
                 <button
                   id="btn-checkout-submit"
                   type="submit"
-                  className="w-full rounded-2xl bg-brand-orange hover:bg-brand-orange/95 text-white font-bold py-4 text-xs tracking-wider uppercase mt-4 shadow-lg shadow-brand-orange/20 transition active:scale-95 flex items-center justify-center space-x-2 cursor-pointer"
+                  className="w-full rounded-2xl bg-red-600 hover:bg-red-700 text-white font-bold py-4 text-xs tracking-wider uppercase mt-4 shadow-lg shadow-red-600/20 transition active:scale-95 flex items-center justify-center space-x-2 cursor-pointer"
                 >
                   <Sparkles className="h-4 w-4" />
                   <span>{total === 0 ? "Place Loyalty Order 🎁 (Free)" : "Secure Online Checkout"}</span>
